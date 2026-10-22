@@ -1,0 +1,3142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>열보다 큰 아홉 : 방탈출 · 용사 액션 · 음성인식 어드벤처</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-light: #334155;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --accent: #38bdf8;
+      --accent-purple: #a855f7;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-sub: #cbd5e1;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header / HUD */
+    .hud {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hud-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .game-logo {
+      font-weight: 800;
+      font-size: 1.12rem;
+      background: linear-gradient(90deg, #fbbf24, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stage-steps {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .step-dot {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--bg-card);
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .step-dot.active {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+    }
+
+    .step-dot.cleared {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+
+    .step-dot.boss-step {
+      border-color: rgba(168, 85, 247, 0.6);
+      color: #e9d5ff;
+      background: rgba(88, 28, 135, 0.35);
+    }
+
+    .step-dot.boss-step.active {
+      background: linear-gradient(135deg, #9333ea, #ec4899);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(236, 72, 153, 0.55);
+    }
+
+    .step-dot.voice-step {
+      border-color: rgba(56, 189, 248, 0.7);
+      color: #bae6fd;
+      background: rgba(3, 105, 161, 0.35);
+    }
+
+    .step-dot.voice-step.active {
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.55);
+    }
+
+    .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-pill span.val {
+      color: var(--primary);
+    }
+
+    .btn-hud {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-hud:hover {
+      background: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* Partner Mini Evolution Bar in Container */
+    .evo-companion-bar {
+      background: linear-gradient(135deg, rgba(49, 46, 129, 0.85), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .evo-companion-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .evo-mini-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: radial-gradient(circle, #fde047 0%, #f59e0b 65%, #7c3aed 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.45);
+      transition: transform 0.3s;
+    }
+
+    .evo-exp-track {
+      width: 160px;
+      height: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .evo-exp-fill {
+      height: 100%;
+      width: 15%;
+      background: linear-gradient(90deg, #38bdf8, #a855f7, #ec4899);
+      transition: width 0.4s ease;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 980px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 20px 60px;
+      flex: 1;
+    }
+
+    /* Story / NPC Banner */
+    .story-box {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .npc-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #f59e0b, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+    }
+
+    .story-content {
+      flex: 1;
+    }
+
+    .story-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.15);
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 6px;
+    }
+
+    .story-text {
+      font-size: 1.01rem;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    /* Card / Stage Panel */
+    .stage-panel {
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .stage-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mission-card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 26px;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      transition: border-color 0.25s;
+    }
+
+    .mission-card.solved {
+      border-color: rgba(16, 185, 129, 0.6);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(6, 78, 59, 0.25));
+    }
+
+    .mission-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+
+    .mission-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-status {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-weight: 700;
+      background: rgba(148, 163, 184, 0.2);
+      color: #cbd5e1;
+    }
+
+    .mission-card.solved .badge-status {
+      background: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+    }
+
+    .question-desc {
+      color: var(--text-sub);
+      font-size: 0.98rem;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    /* Blank / Inline Slot Styling */
+    .blank-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 82px;
+      padding: 3px 12px;
+      margin: 0 4px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px dashed #38bdf8;
+      color: #38bdf8;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .blank-box.filled {
+      border-style: solid;
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    /* Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .option-btn {
+      background: var(--bg-card-light);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text-main);
+      padding: 13px 16px;
+      border-radius: 14px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
+    .option-btn.correct {
+      background: rgba(16, 185, 129, 0.3) !important;
+      border-color: #10b981 !important;
+      color: #6ee7b7 !important;
+    }
+
+    .option-btn.wrong {
+      background: rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      color: #fca5a5 !important;
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .feedback-msg {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.93rem;
+      line-height: 1.55;
+      display: none;
+    }
+
+    .feedback-msg.show {
+      display: block;
+    }
+
+    .feedback-msg.ok {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+
+    .feedback-msg.err {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fecaca;
+    }
+
+    /* Word Bank Fill-in Component */
+    .sentence-panel {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      line-height: 2.1;
+      font-size: 1.03rem;
+      margin-bottom: 16px;
+    }
+
+    .word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .word-chip {
+      background: linear-gradient(135deg, #334155, #1e293b);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #e0f2fe;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .word-chip:hover:not(.used) {
+      background: #0284c7;
+      color: #fff;
+      transform: scale(1.04);
+    }
+
+    .word-chip.used {
+      opacity: 0.35;
+      cursor: default;
+      text-decoration: line-through;
+    }
+
+    /* Idiom Dungeon Cards (Stage 3) */
+    .idiom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .idiom-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.25s;
+    }
+
+    .idiom-card.cleared {
+      border-color: #10b981;
+      background: rgba(6, 78, 59, 0.25);
+    }
+
+    .idiom-hanja {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .idiom-name {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+
+    .idiom-ex {
+      font-size: 0.84rem;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    /* Primary Action Button */
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
+      transition: 0.25s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(234, 88, 12, 0.5);
+    }
+
+    .btn-primary.purple-btn {
+      background: linear-gradient(135deg, #9333ea, #ec4899);
+      box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
+    }
+
+    .btn-primary.teal-btn {
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .stage-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Input Fields for Reflection */
+    .input-area {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 0.96rem;
+      margin-top: 8px;
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .input-area:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    /* Certificate Box */
+    .certificate {
+      background: linear-gradient(135deg, #1e1b4b, #0f172a);
+      border: 3px solid #fbbf24;
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(251, 191, 36, 0.25);
+      margin-top: 20px;
+    }
+
+    .cert-badge {
+      font-size: 3.6rem;
+      margin-bottom: 10px;
+    }
+
+    .cert-title {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+
+    /* =========================================================================
+       STAGE 6: HERO ACTION ADVENTURE + GIANT BOSS TYPING RAID
+       ========================================================================= */
+    .evo-roadmap {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .evo-step-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 6px;
+      text-align: center;
+      opacity: 0.45;
+      transition: all 0.3s;
+    }
+
+    .evo-step-card.unlocked {
+      opacity: 1;
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .evo-step-card.current-evo {
+      opacity: 1;
+      border: 2px solid #fbbf24;
+      background: linear-gradient(180deg, rgba(124, 58, 237, 0.4), rgba(15, 23, 42, 0.95));
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.35);
+    }
+
+    .adventure-wrapper {
+      background: linear-gradient(180deg, #0b1120 0%, #1e1b4b 100%);
+      border: 2px solid rgba(168, 85, 247, 0.6);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .adv-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    #adventureCanvas {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 16px;
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      background: #090d16;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    .adv-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .dpad-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ctrl-btn {
+      background: #334155;
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.15s;
+    }
+
+    .ctrl-btn:hover, .ctrl-btn:active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
+    .combat-dock {
+      margin-top: 18px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #f59e0b;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: all 0.3s;
+    }
+
+    .combat-dock.boss-mode {
+      border-color: #ef4444;
+      background: radial-gradient(circle at top, rgba(127, 29, 29, 0.45), rgba(15, 23, 42, 0.98));
+      box-shadow: 0 0 35px rgba(239, 68, 68, 0.35);
+    }
+
+    .typing-arena-box {
+      background: rgba(2, 6, 23, 0.85);
+      border: 2px solid rgba(239, 68, 68, 0.6);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+
+    .typing-clue-title {
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: #fca5a5;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .typing-clue-desc {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #fef08a;
+      line-height: 1.55;
+      margin-bottom: 14px;
+      padding: 12px 16px;
+      background: rgba(251, 191, 36, 0.1);
+      border-left: 4px solid #fbbf24;
+      border-radius: 8px;
+    }
+
+    .typing-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .typing-input {
+      flex: 1;
+      min-width: 220px;
+      background: #0f172a;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .typing-input:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+    }
+
+    .hint-chips-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .evo-banner-toast {
+      background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b);
+      color: #fff;
+      font-weight: 800;
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* =========================================================================
+       STAGE 7: VOICE RECOGNITION MAGIC SPELL QUIZ SANCTUARY
+       ========================================================================= */
+    .voice-sanctuary {
+      background: radial-gradient(circle at top, rgba(14, 116, 144, 0.35), rgba(15, 23, 42, 0.95));
+      border: 2px solid rgba(56, 189, 248, 0.55);
+      border-radius: 24px;
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .voice-orbs-progress {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .voice-orb-dot {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      transition: 0.3s;
+    }
+
+    .voice-orb-dot.active {
+      border-color: #38bdf8;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+      transform: scale(1.1);
+    }
+
+    .voice-orb-dot.cleared {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #6ee7b7;
+      color: #fff;
+    }
+
+    .voice-question-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 720px;
+      margin: 0 auto 22px;
+    }
+
+    .mic-btn-giant {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px solid #38bdf8;
+      background: radial-gradient(circle, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      font-size: 2.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.5);
+      transition: all 0.25s;
+      margin: 10px 0;
+    }
+
+    .mic-btn-giant:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 38px rgba(56, 189, 248, 0.8);
+    }
+
+    .mic-btn-giant.listening {
+      background: radial-gradient(circle, #ef4444 0%, #b91c1c 100%);
+      border-color: #fca5a5;
+      animation: pulseMic 1.1s infinite ease-in-out;
+    }
+
+    @keyframes pulseMic {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+      50% { transform: scale(1.14); box-shadow: 0 0 45px rgba(239, 68, 68, 0.95); }
+    }
+
+    .voice-wave-bars {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      margin: 8px 0;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+    }
+
+    .voice-wave-bars.active {
+      opacity: 1;
+    }
+
+    .wave-bar {
+      width: 6px;
+      height: 10px;
+      background: #38bdf8;
+      border-radius: 99px;
+    }
+
+    .voice-wave-bars.active .wave-bar {
+      animation: soundWave 0.6s infinite ease-in-out alternate;
+    }
+    .voice-wave-bars.active .wave-bar:nth-child(2) { animation-delay: 0.12s; background: #a855f7; }
+    .voice-wave-bars.active .wave-bar:nth-child(3) { animation-delay: 0.24s; background: #ec4899; }
+    .voice-wave-bars.active .wave-bar:nth-child(4) { animation-delay: 0.36s; background: #fbbf24; }
+    .voice-wave-bars.active .wave-bar:nth-child(5) { animation-delay: 0.18s; background: #10b981; }
+
+    @keyframes soundWave {
+      from { height: 8px; }
+      to { height: 30px; }
+    }
+
+    .transcript-box {
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px dashed rgba(56, 189, 248, 0.5);
+      border-radius: 14px;
+      padding: 14px 20px;
+      max-width: 520px;
+      margin: 12px auto;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #7dd3fc;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Modal for Answer Sheet Reference */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.8);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      max-width: 820px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      background: #334155;
+      color: #fff;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .ans-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.92rem;
+    }
+
+    .ans-table th, .ans-table td {
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    .ans-table th {
+      background: rgba(15, 23, 42, 0.8);
+      color: #fbbf24;
+    }
+
+    .ans-highlight {
+      color: #34d399;
+      font-weight: 800;
+    }
+
+    @media (max-width: 680px) {
+      .story-box { flex-direction: column; text-align: center; }
+      .evo-roadmap { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top HUD -->
+  <header class="hud">
+    <div class="hud-left">
+      <div class="game-logo">🗝️ 열보다 큰 아홉</div>
+      <div class="stage-steps" id="stageNav">
+        <button class="step-dot active" onclick="goStage(0)">인트로</button>
+        <button class="step-dot" onclick="goStage(1)" id="nav1">1관문: 읽기 전</button>
+        <button class="step-dot" onclick="goStage(2)" id="nav2">2관문: 10과 9</button>
+        <button class="step-dot" onclick="goStage(3)" id="nav3">3관문: 구(9) 어휘</button>
+        <button class="step-dot" onclick="goStage(4)" id="nav4">4관문: 깊은 뜻</button>
+        <button class="step-dot" onclick="goStage(5)" id="nav5">5관문: 읽은 후</button>
+        <button class="step-dot boss-step" onclick="goStage(6)" id="nav6">⚔️ 6관문: 용사 액션</button>
+        <button class="step-dot voice-step" onclick="goStage(7)" id="nav7">🎙️ 7관문: 음성 주문</button>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="stat-pill">🔮 구슬 <span class="val" id="orbCount">0 / 9</span></div>
+      <div class="stat-pill">⭐ 점수 <span class="val" id="scoreVal">0</span></div>
+      <button class="btn-hud" onclick="toggleSound()" id="soundBtn">🔊 효과음 ON</button>
+      <button class="btn-hud" onclick="openAnswerModal()">📖 학습지 빈칸 도감</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Persistent Companion Hero Evolution Status Bar -->
+    <div class="evo-companion-bar">
+      <div class="evo-companion-left">
+        <div class="evo-mini-avatar" id="miniEvoIcon">🗡️</div>
+        <div>
+          <div style="font-size:0.78rem; color:#e9d5ff; font-weight:700;">나의 가능성 용사 캐릭터 (5단계 진화)</div>
+          <div style="font-size:1.02rem; font-weight:800; color:#fbbf24;" id="miniEvoTitle">Lv.1 초보 수련 용사 (아홉이)</div>
+          <div style="font-size:0.8rem; color:#cbd5e1;" id="miniEvoDesc">6관문 액션 & 보스 타이핑, 7관문 음성인식 주문까지 돌파해 신화 용사로 각성하세요!</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:4px; text-align:right;">용사 각성도 <span id="miniEvoPercent">15%</span></div>
+          <div class="evo-exp-track">
+            <div class="evo-exp-fill" id="miniEvoFill"></div>
+          </div>
+        </div>
+        <button class="btn-hud" style="border-color:#c084fc; color:#e9d5ff; background:rgba(147,51,234,0.3);" onclick="goStage(6)">⚔️ 6관문 액션</button>
+        <button class="btn-hud" style="border-color:#38bdf8; color:#bae6fd; background:rgba(2,132,199,0.3);" onclick="goStage(7)">🎙️ 7관문 음성퀴즈</button>
+      </div>
+    </div>
+
+    <!-- STAGE 0: INTRO -->
+    <section class="stage-panel active" id="stage0">
+      <div class="story-box">
+        <div class="npc-avatar">🧙‍♂️</div>
+        <div class="story-content">
+          <span class="story-tag">프롤로그 · 시간의 서고 7대 관문 대모험</span>
+          <p class="story-text">
+            "환영한다! 이곳은 <strong>이문구 작가의 《열보다 큰 아홉》</strong> 비급서가 잠든 시간의 서고다.<br>
+            • <strong>1~5관문</strong>: 학습지 빈칸 방탈출로 지혜의 구슬 모으기<br>
+            • <strong>제6관문</strong>: 용사를 5단계로 진화시키며 몬스터를 베고, <strong>거대 마룡 보스를 타이핑(타자)으로 무찌르는 액션 어드벤처</strong><br>
+            • <strong>제7관문</strong>: 마이크로 직접 정답 단어를 외쳐 마지막 봉인을 여는 <strong>음성인식 마법 주문 퀴즈</strong>!"
+          </p>
+        </div>
+      </div>
+
+      <div class="mission-card" style="text-align:center; padding: 36px 24px;">
+        <div style="font-size: 3.2rem; margin-bottom: 12px;">🗡️➡️🦁➡️🐉 + 🎙️✨</div>
+        <h1 style="font-size: 1.8rem; margin-bottom: 10px; color: #fbbf24;">〈열보다 큰 아홉〉 풀코스 방탈출 & 액션·음성 어드벤처</h1>
+        <p class="question-desc" style="max-width: 660px; margin: 0 auto 24px;">
+          교과서(131p~134p)와 학습지(3pg~5pg)의 모든 내용을 <strong>빈칸 퍼즐 → 횡스크롤 액션 & 타이핑 보스전 → 음성인식 스피드 단어 퀴즈</strong>로 신나게 정복해 보세요!
+        </p>
+        <div style="max-width: 340px; margin: 0 auto 24px;">
+          <input type="text" id="playerNameInput" placeholder="용사 이름(또는 학번/이름)을 입력하세요" 
+            style="width:100%; padding:13px 16px; border-radius:12px; border:1px solid #38bdf8; background:#0f172a; color:#fff; font-size:1rem; text-align:center;">
+        </div>
+        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="startGame()">🚀 제1관문부터 순서대로 출발</button>
+          <button class="btn-primary purple-btn" onclick="goStage(6)">⚔️ 제6관문 (액션 & 타이핑 보스)</button>
+          <button class="btn-primary teal-btn" onclick="goStage(7)">🎙️ 제7관문 (음성인식 퀴즈)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 1: 읽기 전 활동 (3pg 상단) -->
+    <section class="stage-panel" id="stage1">
+      <div class="story-box">
+        <div class="npc-avatar">🔍</div>
+        <div class="story-content">
+          <span class="story-tag">제1관문 · 읽기 전 활동 (학습지 3pg)</span>
+          <p class="story-text">
+            "첫 번째 문은 <strong>제목의 비밀과 표현법</strong>을 꿰뚫어 보아야 열린다! 9와 10 중 원래 더 큰 수는 무엇인지, 그리고 왜 글쓴이는 '열보다 큰 아홉'이라고 했는지 추리해 보자."
+          </p>
+        </div>
+      </div>
+
+      <!-- Mission 1-1 -->
+      <div class="mission-card" id="m1_1">
+        <div class="mission-header">
+          <div class="mission-title">🧩 미션 1-1. 제목의 의미 예측하기 & 훑어보기</div>
+          <span class="badge-status" id="status_m1_1">미해결</span>
+        </div>
+        <p class="question-desc">
+          1. 9와 10 중에 더 큰 수는 원래 <strong>( 10 / 열 )</strong>입니다.<br>
+          2. 그렇다면 글쓴이가 제목을 <strong>'열보다 큰 아홉'</strong>이라고 지은 까닭과, 본문을 빠르게 훑어보았을 때 예측할 수 있는 내용으로 가장 알맞은 것은 무엇일까요?
+        </p>
+        <div class="options-grid">
+          <button class="option-btn" onclick="checkM1_1(this, false)">수학 공식을 새로 발명해서 9를 10보다 큰 숫자로 바꾸기 위해서</button>
+          <button class="option-btn" onclick="checkM1_1(this, true)">완벽하게 끝난 '10'보다, 부족하지만 무한한 가능성과 희망을 품은 '9'의 가치를 일깨우기 위해서</button>
+          <button class="option-btn" onclick="checkM1_1(this, false)">조상들이 숫자 10을 쓸 줄 몰라서 9까지만 숫자를 세었기 때문에</button>
+        </div>
+        <div class="feedback-msg" id="fb_m1_1"></div>
+      </div>
+
+      <!-- Mission 1-2 -->
+      <div class="mission-card" id="m1_2">
+        <div class="mission-header">
+          <div class="mission-title">🔎 미션 1-2. 본문 핵심 키워드 레이더 (3개 선택)</div>
+          <span class="badge-status" id="status_m1_2">미해결</span>
+        </div>
+        <p class="question-desc">
+          본문 글을 빠르게 훑어보았을 때 자주 등장하는 <strong>핵심 키워드 3가지</strong>를 모두 찾아 클릭해 보세요!
+        </p>
+        <div class="options-grid" id="keywordGrid">
+          <button class="option-btn" onclick="toggleKeyword(this, true)">아홉(9)과 열(10)</button>
+          <button class="option-btn" onclick="toggleKeyword(this, false)">인공지능 로봇</button>
+          <button class="option-btn" onclick="toggleKeyword(this, true)">완전함과 아쉬움(여지)</button>
+          <button class="option-btn" onclick="toggleKeyword(this, false)">외계 행성 탐사</button>
+          <button class="option-btn" onclick="toggleKeyword(this, true)">가능성과 청소년</button>
+          <button class="option-btn" onclick="toggleKeyword(this, false)">주식 투자 비법</button>
+        </div>
+        <div class="feedback-msg" id="fb_m1_2"></div>
+      </div>
+
+      <!-- Mission 1-3 -->
+      <div class="mission-card" id="m1_3">
+        <div class="mission-header">
+          <div class="mission-title">🔐 미션 1-3. 제목에 담긴 표현법 암호 해독 (학습지 4번)</div>
+          <span class="badge-status" id="status_m1_3">미해결</span>
+        </div>
+        <p class="question-desc">
+          아래 단어 칩을 순서대로 클릭하여 학습지 4번 문장의 빈칸 3개를 완성하세요!<br>
+          <span style="color:#94a3b8; font-size:0.88rem;">힌트 예시: '소리 없는 아우성', '나의 모국어는 침묵', '작은 거인'</span>
+        </p>
+        <div class="sentence-panel">
+          제목에 사용된 표현법은 <span class="blank-box" id="b1_3_0" onclick="resetBlank('m1_3', 0)">?</span>법으로, 
+          '겉으로는 <span class="blank-box" id="b1_3_1" onclick="resetBlank('m1_3', 1)">?</span>되는 것처럼 보이지만, 
+          그 이면에 깊은 <span class="blank-box" id="b1_3_2" onclick="resetBlank('m1_3', 2)">?</span>을 담고 있는 것'이다.
+        </div>
+        <div class="word-bank" id="wb_m1_3">
+          <button class="word-chip" onclick="fillBlank('m1_3', '역설', this)">역설</button>
+          <button class="word-chip" onclick="fillBlank('m1_3', '반어', this)">반어</button>
+          <button class="word-chip" onclick="fillBlank('m1_3', '모순(말이 안)', this)">모순(말이 안)</button>
+          <button class="word-chip" onclick="fillBlank('m1_3', '진리(뜻)', this)">진리(뜻)</button>
+          <button class="word-chip" onclick="fillBlank('m1_3', '과장', this)">과장</button>
+        </div>
+        <div class="feedback-msg" id="fb_m1_3"></div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(0)">← 이전으로</button>
+        <button class="btn-primary" onclick="goStage(2)">제2관문으로 이동 →</button>
+      </div>
+    </section>
+
+    <!-- STAGE 2: 읽는 중 활동 1 - 열(10)과 아홉(9)의 의미 (3pg 하단) -->
+    <section class="stage-panel" id="stage2">
+      <div class="story-box">
+        <div class="npc-avatar">⚖️</div>
+        <div class="story-content">
+          <span class="story-tag">제2관문 · 읽는 중 활동 1 (학습지 3pg 하단)</span>
+          <p class="story-text">
+            "두 번째 방은 <strong>'열(10)'과 '아홉(9)'의 저울 방</strong>이다! 본문에서 설명하는 숫자 10과 숫자 9의 의미를 빈칸에 정확히 채워 넣으면 구슬을 얻을 수 있다!"
+          </p>
+        </div>
+      </div>
+
+      <!-- Mission 2-1: 열(10)의 의미 -->
+      <div class="mission-card" id="m2_1">
+        <div class="mission-header">
+          <div class="mission-title">🔟 미션 2-1. '열(10)'이라는 숫자의 의미 파악하기</div>
+          <span class="badge-status" id="status_m2_1">미해결</span>
+        </div>
+        <p class="question-desc">아래 단어 칩을 클릭해 '열(10)'의 의미와 관련 표현(십상)의 빈칸 4개를 채워 보세요.</p>
+        <div class="sentence-panel">
+          • 십진급수에서 제일 먼저 꽉 <span class="blank-box" id="b2_1_0" onclick="resetBlank('m2_1', 0)">?</span> 수<br>
+          • 이룰 것을 이룩한 <span class="blank-box" id="b2_1_1" onclick="resetBlank('m2_1', 1)">?</span>한 수<br>
+          • 미진한 데가 없는 <span class="blank-box" id="b2_1_2" onclick="resetBlank('m2_1', 2)">?</span>한 수 (또는 성공한 수)<br>
+          • <strong>*십상(十 열 십, 成 이룰 성)</strong> : 무엇을 하기에 그 이상 좋을 수가 없이 <span class="blank-box" id="b2_1_3" onclick="resetBlank('m2_1', 3)">?</span>은 때
+        </div>
+        <div class="word-bank" id="wb_m2_1">
+          <button class="word-chip" onclick="fillBlank('m2_1', '찬', this)">찬</button>
+          <button class="word-chip" onclick="fillBlank('m2_1', '완전', this)">완전</button>
+          <button class="word-chip" onclick="fillBlank('m2_1', '완벽', this)">완벽</button>
+          <button class="word-chip" onclick="fillBlank('m2_1', '알맞', this)">알맞</button>
+          <button class="word-chip" onclick="fillBlank('m2_1', '부족', this)">부족</button>
+        </div>
+        <div class="feedback-msg" id="fb_m2_1"></div>
+      </div>
+
+      <!-- Mission 2-2: 아홉(9)의 의미 -->
+      <div class="mission-card" id="m2_2">
+        <div class="mission-header">
+          <div class="mission-title">9️⃣ 미션 2-2. '아홉(9)'이라는 숫자의 의미 파악하기</div>
+          <span class="badge-status" id="status_m2_2">미해결</span>
+        </div>
+        <p class="question-desc">아래 단어 칩을 클릭해 '아홉(9)'의 의미 빈칸 4개를 순서대로 채워 보세요.</p>
+        <div class="sentence-panel">
+          • 열보다 <span class="blank-box" id="b2_2_0" onclick="resetBlank('m2_2', 0)">?</span>가 모자라는 수<br>
+          • <span class="blank-box" id="b2_2_1" onclick="resetBlank('m2_2', 1)">?</span>에 거의 다다른 수<br>
+          • 하나만 보태면 <span class="blank-box" id="b2_2_2" onclick="resetBlank('m2_2', 2)">?</span>에 이르게 되는 수<br>
+          • 그래서 매우 <span class="blank-box" id="b2_2_3" onclick="resetBlank('m2_2', 3)">?</span>을 느끼게 하는 수
+        </div>
+        <div class="word-bank" id="wb_m2_2">
+          <button class="word-chip" onclick="fillBlank('m2_2', '하나(1)', this)">하나(1)</button>
+          <button class="word-chip" onclick="fillBlank('m2_2', '열(완성)', this)">열(완성)</button>
+          <button class="word-chip" onclick="fillBlank('m2_2', '열(10)', this)">열(10)</button>
+          <button class="word-chip" onclick="fillBlank('m2_2', '아쉬움(안타까움)', this)">아쉬움(안타까움)</button>
+          <button class="word-chip" onclick="fillBlank('m2_2', '자만심', this)">자만심</button>
+        </div>
+        <div class="feedback-msg" id="fb_m2_2"></div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(1)">← 제1관문으로</button>
+        <button class="btn-primary" onclick="goStage(3)">제3관문(구 어휘 던전)으로 이동 →</button>
+      </div>
+    </section>
+
+    <!-- STAGE 3: 아홉(9)이 사용된 표현 총정리 (4pg) -->
+    <section class="stage-panel" id="stage3">
+      <div class="story-box">
+        <div class="npc-avatar">🏮</div>
+        <div class="story-content">
+          <span class="story-tag">제3관문 · 아홉(9)이 사용된 표현 총정리 (학습지 4pg)</span>
+          <p class="story-text">
+            "세 번째 방은 우리말 속에 숨어 있는 <strong>'아홉(구, 九)'의 보물창고</strong>다! 구만리장천, 구곡간장, 구절양장, 구중궁궐, 구사일생, 구천, 구경, 9층 탑, 중양절까지 봉인을 해제해 보자!"
+          </p>
+        </div>
+      </div>
+
+      <!-- Mission 3-1: 사자성어 5종 빈칸 격파 -->
+      <div class="mission-card" id="m3_1">
+        <div class="mission-header">
+          <div class="mission-title">⚔️ 미션 3-1. '구(九)'가 들어간 다섯 가지 성어 봉인 해제</div>
+          <span class="badge-status" id="status_m3_1">0 / 5 해제</span>
+        </div>
+        <p class="question-desc">각 카드의 뜻풀이에 들어갈 알맞은 빈칸 정답을 선택해 5개의 성어 카드를 모두 활성화하세요!</p>
+
+        <div class="idiom-grid">
+          <div class="idiom-card" id="ic_1">
+            <div>
+              <div class="idiom-hanja">1) 아홉 구, 일만 만, 마을 리, 길 장, 하늘 천</div>
+              <div class="idiom-name">구만리장천 (九萬里長天)</div>
+              <p style="font-size:0.92rem; line-height:1.5;"><strong>( &nbsp; ? &nbsp; )</strong> 높고 너른 하늘</p>
+              <div class="idiom-ex">예) 앞길이 구만리장천이다. / 구만리장천을 헤맨다.</div>
+            </div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr; margin-top:8px;">
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(1, this, true)">한없이(끝없이)</button>
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(1, this, false)">조금만</button>
+            </div>
+          </div>
+
+          <div class="idiom-card" id="ic_2">
+            <div>
+              <div class="idiom-hanja">2) 아홉 구, 굽을 곡, 간 간, 창자 장</div>
+              <div class="idiom-name">구곡간장 (九曲肝腸)</div>
+              <p style="font-size:0.92rem; line-height:1.5;">굽이굽이 <strong>( &nbsp; ? &nbsp; )</strong> 서린 마음 (시름이 쌓인 마음속)</p>
+              <div class="idiom-ex">예) 구곡간장이 녹는 아픔 / 슬픔에 구곡간장이 끊어지는구나.</div>
+            </div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr; margin-top:8px;">
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(2, this, false)">가볍게</button>
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(2, this, true)">깊이</button>
+            </div>
+          </div>
+
+          <div class="idiom-card" id="ic_3">
+            <div>
+              <div class="idiom-hanja">3) 아홉 구, 꺾을 절, 양 양, 창자 장</div>
+              <div class="idiom-name">구절양장 (九折羊腸)</div>
+              <p style="font-size:0.92rem; line-height:1.5;">굽이굽이 에워도는 산굽이가 얼마인지 <strong>( &nbsp; ? &nbsp; )</strong> 길 (꼬불꼬불 험한 산길)</p>
+              <div class="idiom-ex">예) 깊은 산속 계곡을 따라 난 길은 그야말로 구절양장이었다.</div>
+            </div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr; margin-top:8px;">
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(3, this, true)">모르는</button>
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(3, this, false)">똑바른</button>
+            </div>
+          </div>
+
+          <div class="idiom-card" id="ic_4">
+            <div>
+              <div class="idiom-hanja">4) 아홉 구, 무거울 중, 집 궁, 대궐 궐</div>
+              <div class="idiom-name">구중궁궐 (九重宮闕)</div>
+              <p style="font-size:0.92rem; line-height:1.5;">통과해야 할 문이 몇이나 되는지 <strong>( &nbsp; ? &nbsp; )</strong> 왕실 (겹겹이 문으로 막은 깊은 궁궐)</p>
+              <div class="idiom-ex">예) 많은 궁녀들이 구중궁궐에서 쓸쓸히 늙어갔다.</div>
+            </div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr; margin-top:8px;">
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(4, this, false)">딱 하나인</button>
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(4, this, true)">모르는</button>
+            </div>
+          </div>
+
+          <div class="idiom-card" id="ic_5">
+            <div>
+              <div class="idiom-hanja">5) 아홉 구, 죽을 사, 한 일, 날 생</div>
+              <div class="idiom-name">구사일생 (九死一生)</div>
+              <p style="font-size:0.92rem; line-height:1.5;">죽을 고비를 <strong>( &nbsp; ? &nbsp; )</strong> 넘기고 살아난 것</p>
+              <div class="idiom-ex">예) 그는 징용에 끌려갔다가 광복이 되어 구사일생으로 살아 돌아왔다.</div>
+            </div>
+            <div class="options-grid" style="grid-template-columns:1fr 1fr; margin-top:8px;">
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(5, this, true)">여러 번(아홉 번)</button>
+              <button class="option-btn" style="padding:8px;" onclick="solveIdiom(5, this, false)">한 번도 안</button>
+            </div>
+          </div>
+        </div>
+        <div class="feedback-msg" id="fb_m3_1"></div>
+      </div>
+
+      <!-- Mission 3-2: 구천, 구경, 탑, 중양절 (학습지 4pg 6~9번) -->
+      <div class="mission-card" id="m3_2">
+        <div class="mission-header">
+          <div class="mission-title">🏯 미션 3-2. 구천 · 구경 · 석탑 · 음력 9월 9일 명절 (6~9번)</div>
+          <span class="badge-status" id="status_m3_2">미해결</span>
+        </div>
+        <p class="question-desc">단어 칩을 클릭해 학습지 4페이지 6~9번의 빈칸 4개를 모두 채워 보세요!</p>
+        <div class="sentence-panel">
+          6. <strong>구천(九天/九泉)</strong> : 끝 간 데가 어디인지 모르는 땅 속이나 저승 (예: 죽어서 구천을 떠돌다)<br>
+          7. <strong>구경(九卿)</strong> : 임금보다 <span class="blank-box" id="b3_2_0" onclick="resetBlank('m3_2', 0)">?</span> 계급 모자라는 대신인 삼공육경(3정승+6조판서)을 일컫는 말.<br>
+          8. 국가 유산도 <span class="blank-box" id="b3_2_1" onclick="resetBlank('m3_2', 1)">?</span>층 탑은 많지만 <span class="blank-box" id="b3_2_2" onclick="resetBlank('m3_2', 2)">?</span>층 탑은 잘 보지 못하였음.<br>
+          9. 음력 9월 9일 : <span class="blank-box" id="b3_2_3" onclick="resetBlank('m3_2', 3)">?</span> 또는 중굿날이라는 이름으로 천년 넘게 큰 명절로 쇠어 옴. (국화차와 국화전을 나누며 장수를 기원한 가을 명절)
+        </div>
+        <div class="word-bank" id="wb_m3_2">
+          <button class="word-chip" onclick="fillBlank('m3_2', '한(1)', this)">한(1)</button>
+          <button class="word-chip" onclick="fillBlank('m3_2', '구(9)', this)">구(9)</button>
+          <button class="word-chip" onclick="fillBlank('m3_2', '십(10)', this)">십(10)</button>
+          <button class="word-chip" onclick="fillBlank('m3_2', '중양절', this)">중양절</button>
+          <button class="word-chip" onclick="fillBlank('m3_2', '단오절', this)">단오절</button>
+        </div>
+        <div class="feedback-msg" id="fb_m3_2"></div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(2)">← 제2관문으로</button>
+        <button class="btn-primary" onclick="goStage(4)">제4관문(조상의 지혜와 메시지)으로 이동 →</button>
+      </div>
+    </section>
+
+    <!-- STAGE 4: 조상들의 지혜, 기네스북, 10과 9 비교, 청소년에게 주는 메시지 (5pg 4~7번) -->
+    <section class="stage-panel" id="stage4">
+      <div class="story-box">
+        <div class="npc-avatar">🌟</div>
+        <div class="story-content">
+          <span class="story-tag">제4관문 · 조상들의 지혜와 청소년에게 주는 메시지 (학습지 5pg)</span>
+          <p class="story-text">
+            "거의 다 왔다! 우리 조상들이 왜 아홉(9)을 사랑했는지, 기네스북은 왜 해마다 다시 찍어내는지, 그리고 중학생인 여러분에게 '9'가 어떤 응원을 건네는지 완성해 보자!"
+          </p>
+        </div>
+      </div>
+
+      <!-- Mission 4-1: 조상들이 9를 사랑한 까닭 & 기네스북 (4~5번) -->
+      <div class="mission-card" id="m4_1">
+        <div class="mission-header">
+          <div class="mission-title">📖 미션 4-1. 조상들이 '9'를 사랑한 까닭 & 기네스북의 비밀 (4~5번)</div>
+          <span class="badge-status" id="status_m4_1">미해결</span>
+        </div>
+        <p class="question-desc">단어 칩을 클릭해 학습지 5페이지 4번과 5번 문장의 빈칸 5개를 완성하세요!</p>
+        <div class="sentence-panel">
+          <strong>4. 우리 조상들이 '아홉(9)'을 사랑한 까닭은?</strong><br>
+          ⇒ 이 세상에 <span class="blank-box" id="b4_1_0" onclick="resetBlank('m4_1', 0)">?</span> 것이 없다는 사실을 알고 있었던 조상들은 모든 일에 <span class="blank-box" id="b4_1_1" onclick="resetBlank('m4_1', 1)">?</span>을 기대하지 않았기 때문이다.<br><br>
+          <strong>5. 기네스북을 해마다 다시 찍어내는 이유</strong><br>
+          ⇒ 기록은 반드시 <span class="blank-box" id="b4_1_2" onclick="resetBlank('m4_1', 2)">?</span> 마련이기 때문이다. 인간은 저마다 무한한 <span class="blank-box" id="b4_1_3" onclick="resetBlank('m4_1', 3)">?</span>을 가지고 타고난 사실과 아울러서, 이 세상에 <span class="blank-box" id="b4_1_4" onclick="resetBlank('m4_1', 4)">?</span>한 인간 또한 결코 어디에도 있을 수 없다.
+        </div>
+        <div class="word-bank" id="wb_m4_1">
+          <button class="word-chip" onclick="fillBlank('m4_1', '완전한(완벽한)', this)">완전한(완벽한)</button>
+          <button class="word-chip" onclick="fillBlank('m4_1', '완전함(완벽함)', this)">완전함(완벽함)</button>
+          <button class="word-chip" onclick="fillBlank('m4_1', '깨지기', this)">깨지기</button>
+          <button class="word-chip" onclick="fillBlank('m4_1', '가능성(잠재력)', this)">가능성(잠재력)</button>
+          <button class="word-chip" onclick="fillBlank('m4_1', '완전(완벽)', this)">완전(완벽)</button>
+          <button class="word-chip" onclick="fillBlank('m4_1', '영원히 유지되기', this)">영원히 유지되기</button>
+        </div>
+        <div class="feedback-msg" id="fb_m4_1"></div>
+      </div>
+
+      <!-- Mission 4-2: 10과 9의 비교 & 청소년에게 주는 메시지 (6~7번) -->
+      <div class="mission-card" id="m4_2">
+        <div class="mission-header">
+          <div class="mission-title">🌱 미션 4-2. '열(10)'과 '구(9)'의 비교 & 청소년에게 주는 메시지 (6~7번)</div>
+          <span class="badge-status" id="status_m4_2">미해결</span>
+        </div>
+        <p class="question-desc">단어 칩을 클릭해 학습지 5페이지 6번과 7번의 빈칸 7개를 채워 보세요!</p>
+        <div class="sentence-panel">
+          <strong>6. '열(10)'과 '구(9)'의 비교</strong><br>
+          • 열(10)은 넘치지도 않고 모자라지도 않기에, 조금의 <span class="blank-box" id="b4_2_0" onclick="resetBlank('m4_2', 0)">?</span>도 없이 꽉 찬 수. 그래서 그 다음이 없이 끝나버린 수.<br>
+          • 구(9)는 다음, 그 다음을 바라볼 수 있는 <span class="blank-box" id="b4_2_1" onclick="resetBlank('m4_2', 1)">?</span>의 수.<br><br>
+          <strong>7. 청소년들에게 '구(9)'가 주는 메시지</strong><br>
+          • 여러분은 한창 자라고, 배우고, 놀아야 할 중학생입니다.<br>
+          • 그렇기에 무엇 한 가지도 <span class="blank-box" id="b4_2_2" onclick="resetBlank('m4_2', 2)">?</span>할 수 없으며, 항상 어딘가 부족한 것이 오히려 <span class="blank-box" id="b4_2_3" onclick="resetBlank('m4_2', 3)">?</span>입니다.<br>
+          • 행여 남보다 <span class="blank-box" id="b4_2_4" onclick="resetBlank('m4_2', 4)">?</span> 것이 아닌가 싶어서 괴로움과 외로움을 느끼는 학생이 있다면 열(10)보다 구(9)라는 숫자를 사랑해보는 것은 어떨까요?<br>
+          ⇒ 자신이 완벽할 수 없는 존재임을 이해하고, 미래의 <span class="blank-box" id="b4_2_5" onclick="resetBlank('m4_2', 5)">?</span>과 <span class="blank-box" id="b4_2_6" onclick="resetBlank('m4_2', 6)">?</span>을 소중히 여기고 살아가자.
+        </div>
+        <div class="word-bank" id="wb_m4_2">
+          <button class="word-chip" onclick="fillBlank('m4_2', '여지(빈틈)', this)">여지(빈틈)</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '가능성(희망)', this)">가능성(희망)</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '완벽(완전)', this)">완벽(완전)</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '정상(당연)', this)">정상(당연)</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '모자란(부족한)', this)">모자란(부족한)</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '가능성', this)">가능성</button>
+          <button class="word-chip" onclick="fillBlank('m4_2', '희망(꿈)', this)">희망(꿈)</button>
+        </div>
+        <div class="feedback-msg" id="fb_m4_2"></div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(3)">← 제3관문으로</button>
+        <button class="btn-primary" onclick="goStage(5)">제5관문(읽은 후 활동)으로 이동 →</button>
+      </div>
+    </section>
+
+    <!-- STAGE 5: 읽은 후 활동 (5pg 하단) & 탈출 인증서 -->
+    <section class="stage-panel" id="stage5">
+      <div class="story-box">
+        <div class="npc-avatar">🏆</div>
+        <div class="story-content">
+          <span class="story-tag">제5관문 · 읽은 후 활동 (학습지 5pg 하단)</span>
+          <p class="story-text">
+            "글의 주제를 완성하고 나만의 마음가짐을 적어 넣자! 그리고 <strong>제6관문(용사 액션 & 보스 타이핑)</strong>과 <strong>제7관문(음성인식 마법 주문 퀴즈)</strong>으로 나아가자!"
+          </p>
+        </div>
+      </div>
+
+      <!-- Mission 5-1: 글의 주제 파악하기 -->
+      <div class="mission-card" id="m5_1">
+        <div class="mission-header">
+          <div class="mission-title">🎯 미션 5-1. [읽은 후 활동] 1. 글의 주제 파악하기</div>
+          <span class="badge-status" id="status_m5_1">미해결</span>
+        </div>
+        <p class="question-desc">단어 칩을 클릭해 이 글의 핵심 주제를 완성하세요!</p>
+        <div class="sentence-panel">
+          <strong>9(아홉)</strong>이라는 수처럼 청소년은 <span class="blank-box" id="b5_1_0" onclick="resetBlank('m5_1', 0)">?</span>하지는 않지만, 
+          <span class="blank-box" id="b5_1_1" onclick="resetBlank('m5_1', 1)">?</span>을 가진 무궁무진한 존재이다.
+        </div>
+        <div class="word-bank" id="wb_m5_1">
+          <button class="word-chip" onclick="fillBlank('m5_1', '완벽(완전)', this)">완벽(완전)</button>
+          <button class="word-chip" onclick="fillBlank('m5_1', '무한한 가능성(희망)', this)">무한한 가능성(희망)</button>
+          <button class="word-chip" onclick="fillBlank('m5_1', '아무런 꿈', this)">아무런 꿈</button>
+        </div>
+        <div class="feedback-msg" id="fb_m5_1"></div>
+      </div>
+
+      <!-- Mission 5-2: 삶에 적용하기 -->
+      <div class="mission-card" id="m5_2">
+        <div class="mission-header">
+          <div class="mission-title">💌 미션 5-2. [읽은 후 활동] 2. 깨달은 점 정리하기 / 삶에 적용하기</div>
+          <span class="badge-status" id="status_m5_2">작성 대기</span>
+        </div>
+        <p class="question-desc">자신의 솔직한 경험과 앞으로의 다짐을 적거나, 아래 예시 버튼으로 빠르게 채운 뒤 저장해 보세요!</p>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-weight:700; color:#fbbf24; display:block; margin-bottom:6px;">
+            Q1. 평소에 자신이 부족하다고 느껴 주눅들거나 속상했던 경험이 있나요?
+          </label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+            <button class="btn-hud" onclick="setSample(1, '시험 성적이나 운동 실력이 친구보다 부족해 보여서 속상했던 적이 있다.')">💡 예시 1 넣기</button>
+            <button class="btn-hud" onclick="setSample(1, '발표나 수행평가를 완벽하게 해내지 못해 스스로에게 실망하고 주눅들었던 적이 있다.')">💡 예시 2 넣기</button>
+          </div>
+          <textarea class="input-area" id="q1Input" placeholder="예: 친구들보다 성적이 안 나오거나 잘하는 게 없는 것 같아 속상했던 적이 있다."></textarea>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label style="font-weight:700; color:#38bdf8; display:block; margin-bottom:6px;">
+            Q2. 앞으로는 그러한 상황에서 어떤 마음가짐을 가져보면 좋을까요?
+          </label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+            <button class="btn-hud" onclick="setSample(2, '지금 완벽하지 않은 것은 당연하므로, 나에게 남은 1만큼의 무한한 가능성을 믿고 꾸준히 노력하겠다!')">💡 예시 1 넣기</button>
+            <button class="btn-hud" onclick="setSample(2, '꽉 찬 10이 아니라고 좌절하기보다, 내일 더 성장할 수 있는 9의 희망을 소중히 여기며 당당하게 지내겠다!')">💡 예시 2 넣기</button>
+          </div>
+          <textarea class="input-area" id="q2Input" placeholder="예: 완벽하지 않아도 괜찮다고 생각하고, 앞으로 더 자랄 수 있는 가능성과 희망을 믿으며 노력하겠다!"></textarea>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="completeReflection()">✨ 다짐 저장 & 인증서 보기</button>
+          <button class="btn-primary purple-btn" onclick="goStage(6)">⚔️ 제6관문: 용사 액션 & 보스 타이핑 출격 →</button>
+        </div>
+        <div class="feedback-msg" id="fb_m5_2"></div>
+      </div>
+
+      <!-- Certificate Output -->
+      <div class="certificate" id="certBox" style="display:none;">
+        <div class="cert-badge" id="certEvoIcon">🎓🔮✨</div>
+        <div class="cert-title">〈열보다 큰 아홉〉 시간의 서고 마스터 인증서</div>
+        <p style="color:#cbd5e1; margin-bottom:18px;">
+          용사 <strong style="color:#38bdf8; font-size:1.15rem;" id="certName">학생</strong> 님은 이문구의 《열보다 큰 아홉》 모든 관문을 돌파하고<br>
+          완벽한 10보다 빛나는 <strong>'아홉(9)의 무한한 가능성'</strong>을 깨달았음을 인증합니다!
+        </p>
+        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:18px; text-align:left; margin-bottom:20px;">
+          <div style="color:#fbbf24; font-weight:800; margin-bottom:6px;">📌 나의 경험 돌아보기 (Q1)</div>
+          <p id="certQ1" style="color:#f8fafc; margin-bottom:14px; line-height:1.5;"></p>
+          <div style="color:#38bdf8; font-weight:800; margin-bottom:6px;">🌱 앞으로의 '아홉(9)' 마음가짐 (Q2)</div>
+          <p id="certQ2" style="color:#f8fafc; line-height:1.5;"></p>
+        </div>
+        <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <button class="btn-primary purple-btn" onclick="goStage(6)">⚔️ 제6관문: 용사 액션 도전!</button>
+          <button class="btn-primary teal-btn" onclick="goStage(7)">🎙️ 제7관문: 음성인식 퀴즈 도전!</button>
+          <button class="btn-hud" onclick="window.print()" style="padding:12px 20px; font-size:0.95rem;">🖨️ 인증서 인쇄 / PDF 저장</button>
+        </div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(4)">← 제4관문으로</button>
+        <button class="btn-primary purple-btn" onclick="goStage(6)">⚔️ 제6관문: 용사 액션 어드벤처 →</button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         STAGE 6: SIDE-SCROLLING HERO ACTION ADVENTURE + GIANT BOSS TYPING RAID
+         ========================================================================= -->
+    <section class="stage-panel" id="stage6">
+      <div class="story-box" style="border-color: rgba(168, 85, 247, 0.6);">
+        <div class="npc-avatar" style="background: linear-gradient(135deg, #dc2626, #9333ea);">⚔️</div>
+        <div class="story-content">
+          <span class="story-tag" style="color:#f472b6; background:rgba(236,72,153,0.15);">제6관문 · 용사 액션 어드벤처 & 초대형 보스 타이핑 레이드</span>
+          <p class="story-text">
+            "용사여, 앞으로 전진하라! 던전 길목을 지키는 <strong>4마리의 수호 몬스터는 객관식 퀴즈 검기</strong>로 베어 넘기며 <strong>용사를 5단계로 진화</strong>시키고,<br>
+            던전 끝에서 기다리는 <strong>초대형 보스 《심연의 마룡 만점마왕 텐(10)》</strong>은 <strong>뜻풀이를 보고 알맞은 단어를 직접 타이핑(타자 입력)</strong>하여 필살기로 격파하라!"
+          </p>
+        </div>
+      </div>
+
+      <!-- 5-Stage Hero Evolution Roadmap -->
+      <div class="evo-roadmap" id="evoRoadmap">
+        <div class="evo-step-card current-evo" id="evoCard0">
+          <div style="font-size:1.8rem;">🗡️</div>
+          <div style="font-size:0.75rem; font-weight:800; color:#fbbf24;">Lv.1 수련 용사</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">기본 목검</div>
+        </div>
+        <div class="evo-step-card" id="evoCard1">
+          <div style="font-size:1.8rem;">⚔️</div>
+          <div style="font-size:0.75rem; font-weight:800; color:#fbbf24;">Lv.2 역설의 검사</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">쌍검 각성</div>
+        </div>
+        <div class="evo-step-card" id="evoCard2">
+          <div style="font-size:1.8rem;">🛡️</div>
+          <div style="font-size:0.75rem; font-weight:800; color:#fbbf24;">Lv.3 구사일생 기사</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">불사조 갑주</div>
+        </div>
+        <div class="evo-step-card" id="evoCard3">
+          <div style="font-size:1.8rem;">🦁</div>
+          <div style="font-size:0.75rem; font-weight:800; color:#fbbf24;">Lv.4 중양절 용장군</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">황금 사자왕</div>
+        </div>
+        <div class="evo-step-card" id="evoCard4">
+          <div style="font-size:1.8rem;">🐉</div>
+          <div style="font-size:0.75rem; font-weight:800; color:#fbbf24;">Lv.5 구만리 신화용사</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">열보다 큰 아홉!</div>
+        </div>
+      </div>
+
+      <div class="evo-banner-toast" id="evoBannerToast">✨ 용사가 새로운 단계로 진화했습니다! ✨</div>
+
+      <!-- 2D Action Adventure Viewport -->
+      <div class="adventure-wrapper">
+        <div class="adv-top-bar">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#7c3aed; color:#fff; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:800;" id="advZoneLabel">던전 1구역 : 역설의 숲</span>
+            <span style="color:#fbbf24; font-weight:800; font-size:0.92rem;" id="advHeroStatus">🗡️ Lv.1 수련 용사</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:0.85rem; color:#cbd5e1;">격파한 몬스터: <strong style="color:#34d399;" id="advKillCount">0 / 4</strong></span>
+            <button class="btn-hud" style="background:rgba(239,68,68,0.25); border-color:#ef4444; color:#fca5a5;" onclick="jumpToGiantBoss()">🔥 거대 보스(타이핑 결전) 바로가기</button>
+          </div>
+        </div>
+
+        <!-- Interactive 2D Side-Scrolling Canvas -->
+        <canvas id="adventureCanvas" width="900" height="320"></canvas>
+
+        <!-- Action Movement Controls -->
+        <div class="adv-controls">
+          <div class="dpad-group">
+            <button class="ctrl-btn" onmousedown="setMove(-1)" onmouseup="setMove(0)" ontouchstart="setMove(-1)" ontouchend="setMove(0)">◀ 왼쪽 이동</button>
+            <button class="ctrl-btn" onmousedown="setMove(1)" onmouseup="setMove(0)" ontouchstart="setMove(1)" ontouchend="setMove(0)">오른쪽 전진 ▶</button>
+            <button class="ctrl-btn" onclick="heroJump()">🔼 점프 (Space)</button>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-primary" style="padding:10px 18px; font-size:0.92rem;" onclick="autoAdvanceToNextMonster()" id="autoDashBtn">⚡ 다음 몬스터에게 자동 돌격!</button>
+            <button class="btn-hud" onclick="resetAdventure()">🔄 던전 처음부터 리셋</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Combat Dock -->
+        <div class="combat-dock" id="combatDock">
+          <!-- Mode 0: Exploring Prompt -->
+          <div id="dockExploreMode">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h3 style="color:#fbbf24; font-size:1.15rem; margin-bottom:4px;">🏃‍♂️ 용사를 오른쪽(▶)으로 이동시켜 몬스터와 마주치세요!</h3>
+                <p style="color:#cbd5e1; font-size:0.93rem;">
+                  키보드 방향키(<strong>◀ / ▶</strong>, 점프 <strong>Space</strong>)를 누르거나 <strong>[⚡ 다음 몬스터에게 자동 돌격!]</strong> 버튼을 누르면 즉시 몬스터와 교전이 시작됩니다!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode 1: Field Monster Quiz Encounter -->
+          <div id="dockQuizMode" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <span style="background:rgba(245,158,11,0.2); color:#fbbf24; padding:4px 12px; border-radius:99px; font-size:0.84rem; font-weight:800;" id="encMonsterBadge">⚔️ 몬스터 조우!</span>
+              <span style="color:#38bdf8; font-size:0.86rem; font-weight:700;">정답을 맞히면 용사가 검기를 날려 몬스터를 베고 진화합니다!</span>
+            </div>
+            <p style="font-size:1.1rem; font-weight:800; line-height:1.6; color:#fff; margin-bottom:14px;" id="encQuestionText"></p>
+            <div class="options-grid" id="encOptionsGrid"></div>
+            <div class="feedback-msg" id="encFeedback"></div>
+          </div>
+
+          <!-- Mode 2: GIANT BOSS TYPING RAID -->
+          <div id="dockBossTypingMode" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+              <div>
+                <span style="background:#dc2626; color:#fff; padding:4px 12px; border-radius:99px; font-size:0.82rem; font-weight:900;">👑 FINAL RAID · 초대형 보스 타이핑 결전</span>
+                <h3 style="color:#fca5a5; font-size:1.28rem; margin-top:6px;">🐉 심연의 거대 마룡 〈만점마왕 텐(10)〉을 타이핑 필살기로 타격하라!</h3>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.85rem; color:#fde047; font-weight:800;">남은 보스 실드: <span id="bossPhaseCount">5 / 5</span> 단계</div>
+                <div style="font-size:0.78rem; color:#cbd5e1;">뜻을 보고 알맞은 단어를 입력 후 Enter!</div>
+              </div>
+            </div>
+
+            <div class="typing-arena-box" id="typingArenaBox">
+              <div class="typing-clue-title">
+                <span id="typingStepLabel">🔥 타이핑 타격 문제 (1 / 5)</span>
+                <span style="color:#38bdf8;" id="typingLengthHint">글자 수 힌트: 5글자</span>
+              </div>
+              <div class="typing-clue-desc" id="typingClueText">
+                뜻풀이를 불러오는 중...
+              </div>
+
+              <div class="typing-input-row">
+                <input type="text" class="typing-input" id="bossTypingInput" placeholder="여기에 정답 단어를 타이핑하고 Enter 키를 누르세요!" autocomplete="off"
+                  onkeydown="if(event.key==='Enter') submitBossTyping()">
+                <button class="btn-primary" style="background:linear-gradient(135deg, #dc2626, #f59e0b);" onclick="submitBossTyping()">⚔️ 검기 발사 (Enter)</button>
+              </div>
+
+              <div class="hint-chips-bar">
+                <button class="btn-hud" onclick="showChosungHint()">💡 초성 힌트 보기</button>
+                <button class="btn-hud" onclick="showFirstCharHint()">🔍 첫 글자 찬스</button>
+                <span id="bossHintDisplay" style="color:#34d399; font-weight:800; font-size:0.92rem; margin-left:6px;"></span>
+              </div>
+              <div class="feedback-msg" id="bossTypingFeedback"></div>
+            </div>
+
+            <!-- Boss Victory Banner -->
+            <div id="bossVictoryPanel" style="display:none; text-align:center; padding:24px 16px;">
+              <div style="font-size:4rem; margin-bottom:10px;">🐉👑⚔️🏆</div>
+              <h2 style="color:#fbbf24; font-size:1.65rem; margin-bottom:8px;">초대형 보스 〈만점마왕 텐(10)〉 토벌 완료!</h2>
+              <p style="color:#e2e8f0; font-size:1rem; line-height:1.6; max-width:640px; margin:0 auto 20px;">
+                당신의 용사는 전설의 최종 단계 <strong>[Lv.5 구만리장천 신화 용사]</strong>로 완벽히 각성했습니다!<br>
+                이제 대망의 마지막 <strong>제7관문 [🎙️ 음성인식 마법 주문 퀴즈]</strong>로 이동하여 목소리로 최후의 봉인을 해제하세요!
+              </p>
+              <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                <button class="btn-primary teal-btn" onclick="goStage(7)">🎙️ 제7관문: 음성인식 마법 주문으로 이동! →</button>
+                <button class="btn-hud" onclick="restartBossRaid()">🔥 보스 타이핑 결전 다시 하기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(5)">← 제5관문으로</button>
+        <button class="btn-primary teal-btn" onclick="goStage(7)">🎙️ 마지막 제7관문 (음성인식 퀴즈)으로 이동 →</button>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         STAGE 7: VOICE RECOGNITION MAGIC SPELL WORD QUIZ
+         ========================================================================= -->
+    <section class="stage-panel" id="stage7">
+      <div class="story-box" style="border-color: rgba(56, 189, 248, 0.6);">
+        <div class="npc-avatar" style="background: linear-gradient(135deg, #0284c7, #10b981);">🎙️</div>
+        <div class="story-content">
+          <span class="story-tag" style="color:#7dd3fc; background:rgba(56,189,248,0.18);">제7관문 · 음성인식(Voice) 마법 주문 퀴즈</span>
+          <p class="story-text">
+            "드디어 마지막 7번째 성소다! 이곳의 마법 문은 오직 <strong>너의 진짜 목소리(음성)</strong>로만 열린다.<br>
+            질문을 보고 중앙의 <strong>[🎙️ 마이크 버튼]</strong>을 누른 뒤, 정답 단어를 또렷하게 외쳐라! 6개의 음성 주문을 모두 외치면 모든 모험이 완성된다!"
+          </p>
+        </div>
+      </div>
+
+      <div class="voice-sanctuary">
+        <!-- 6 Spell Orbs Progress -->
+        <div class="voice-orbs-progress" id="voiceOrbDots">
+          <div class="voice-orb-dot active" id="vdot0">1</div>
+          <div class="voice-orb-dot" id="vdot1">2</div>
+          <div class="voice-orb-dot" id="vdot2">3</div>
+          <div class="voice-orb-dot" id="vdot3">4</div>
+          <div class="voice-orb-dot" id="vdot4">5</div>
+          <div class="voice-orb-dot" id="vdot5">6</div>
+        </div>
+
+        <!-- Active Voice Quiz Box -->
+        <div id="voiceActiveArea">
+          <div class="voice-question-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+              <span style="background:rgba(16,185,129,0.2); color:#34d399; padding:4px 12px; border-radius:99px; font-size:0.84rem; font-weight:800;" id="vqStepBadge">음성 주문 1 / 6</span>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-hud" onclick="speakCurrentQuestion()">🔊 문제 음성으로 듣기</button>
+                <button class="btn-hud" onclick="showVoiceHint()">💡 초성/글자수 힌트</button>
+              </div>
+            </div>
+
+            <p style="font-size:1.22rem; font-weight:800; line-height:1.6; color:#f8fafc; margin-bottom:12px;" id="vqQuestionText">
+              질문을 불러오는 중...
+            </p>
+            <div id="vqHintBox" style="color:#fbbf24; font-weight:800; font-size:0.95rem; min-height:22px;"></div>
+          </div>
+
+          <!-- Giant Microphone Trigger -->
+          <div>
+            <button class="mic-btn-giant" id="micBtn" onclick="toggleVoiceRecognition()" title="클릭하고 정답을 말하세요">🎙️</button>
+            <div style="font-size:0.95rem; font-weight:800; color:#bae6fd; margin-top:4px;" id="micStatusLabel">
+              위 🎙️ 마이크 버튼을 누르고 정답 단어를 크게 말해보세요!
+            </div>
+          </div>
+
+          <!-- Animated Sound Wave -->
+          <div class="voice-wave-bars" id="voiceWaveBars">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+
+          <!-- Recognized Speech Transcript Box -->
+          <div class="transcript-box" id="voiceTranscriptBox">
+            🗣️ 내 목소리 인식 결과: 대기 중...
+          </div>
+
+          <div class="feedback-msg" id="voiceFeedback" style="max-width:640px; margin:14px auto;"></div>
+
+          <div style="margin-top:16px; display:none;" id="voiceNextBtnWrap">
+            <button class="btn-primary teal-btn" onclick="nextVoiceQuestion()" id="voiceNextBtn">다음 음성 주문으로 이동! 🎙️→</button>
+          </div>
+
+          <!-- Fallback if PC has no microphone -->
+          <div style="margin-top:26px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1); max-width:540px; margin-left:auto; margin-right:auto;">
+            <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">
+              💻 혹시 교실 컴퓨터에 마이크가 없거나 브라우저 마이크 권한이 차단되었나요? 아래 비상 주문창으로도 통과할 수 있습니다.
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+              <input type="text" id="voiceFallbackInput" placeholder="마이크 미작동 시 여기에 정답 입력" 
+                style="background:#0f172a; border:1px solid #475569; color:#fff; padding:8px 14px; border-radius:10px; font-size:0.9rem; width:220px;"
+                onkeydown="if(event.key==='Enter') submitVoiceFallback()">
+              <button class="btn-hud" onclick="submitVoiceFallback()">⌨️ 비상 주문 전송</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voice Stage Grand Clear Panel -->
+        <div id="voiceVictoryArea" style="display:none; padding:24px 10px;">
+          <div style="font-size:4.2rem; margin-bottom:10px;">🧙‍♂️🐉👑🎉</div>
+          <h2 style="color:#34d399; font-size:1.75rem; margin-bottom:14px;">축하합니다! 제7관문 음성인식 마법 주문까지 올클리어!</h2>
+
+          <!-- 산휘쌤 확인 대사 박스 -->
+          <div style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(168, 85, 247, 0.25)); border:3px solid #fbbf24; border-radius:20px; padding:24px 20px; max-width:660px; margin:0 auto 22px; box-shadow:0 0 30px rgba(251, 191, 36, 0.35);">
+            <div style="font-size:0.85rem; font-weight:800; color:#fde047; margin-bottom:8px;">🧙‍♂️ 시간의 서고 대마법사의 최후 전언</div>
+            <p style="font-size:1.55rem; font-weight:900; color:#fff; line-height:1.45; word-break:keep-all; text-shadow:0 2px 10px rgba(0,0,0,0.6);">
+              "산휘쌤에게 확인을 받고 자유시간을 즐기거라!"
+            </p>
+            <div style="margin-top:14px; padding-top:12px; border-top:1px dashed rgba(255,255,255,0.25); font-size:0.92rem; color:#e2e8f0; display:flex; justify-content:center; gap:18px; flex-wrap:wrap;">
+              <span>👤 클리어 용사: <strong style="color:#38bdf8;" id="finalHeroName">용사</strong></span>
+              <span>⭐ 최종 점수: <strong style="color:#fbbf24;" id="finalHeroScore">0</strong>점</span>
+              <span>⏰ 완료 시각: <strong style="color:#34d399;" id="finalClearTime">-</strong></span>
+            </div>
+          </div>
+
+          <p style="color:#cbd5e1; font-size:0.98rem; line-height:1.6; max-width:640px; margin:0 auto 22px;">
+            이 화면을 그대로 띄워 두고 <strong>산휘쌤께 손들고 확인</strong>을 받으세요!<br>
+            이문구 작가의 《열보다 큰 아홉》이 전하는 메시지처럼, 여러분의 무한한 가능성을 응원합니다!
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <button class="btn-primary" onclick="speakFinalLine()">🔊 대마법사 대사 다시 듣기</button>
+            <button class="btn-primary teal-btn" onclick="restartVoiceQuiz()">🔄 음성인식 퀴즈 다시 하기</button>
+            <button class="btn-hud" onclick="openAnswerModal()">📖 학습지 전체 빈칸 정답 도감 열기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage-footer">
+        <button class="btn-hud" onclick="goStage(6)">← 제6관문(용사 액션 & 보스 타이핑)으로</button>
+        <button class="btn-primary" onclick="openAnswerModal()">📖 학습지 전체 빈칸 정답 도감 열기</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: PDF 학습지 3~5pg 전체 빈칸 정답 도감 -->
+  <div class="modal-backdrop" id="answerModal" onclick="if(event.target===this) closeAnswerModal()">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeAnswerModal()">✕</button>
+      <h2 style="color:#fbbf24; margin-bottom:6px;">📖 〈열보다 큰 아홉〉 학습지(3pg~5pg) 빈칸 정답 도감</h2>
+      <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:16px;">수업 시간 학습지 빈칸 정리 및 시험 대비 복습용 핵심 요약표입니다.</p>
+
+      <h3 style="color:#38bdf8; margin:16px 0 8px; font-size:1.05rem;">[3pg] 읽기 전 활동 & 읽는 중 활동 (1~2번)</h3>
+      <table class="ans-table">
+        <tr><th>문항</th><th>학습지 문장 및 빈칸 정답</th></tr>
+        <tr><td>읽기 전 1~2</td><td>9와 10 중에 더 큰 수는 원래 (<span class="ans-highlight">10 / 열</span>)이다.<br>제목을 '열보다 큰 아홉'이라고 지은 까닭: 꽉 차서 끝나버린 10보다, 앞으로 나아갈 <span class="ans-highlight">가능성과 희망이 있는 9의 가치</span>를 강조하기 위해.</td></tr>
+        <tr><td>읽기 전 4</td><td>제목에 사용된 표현법은 (<span class="ans-highlight">역설</span>)법으로, '겉으로는 (<span class="ans-highlight">모순 / 말이 안</span>)되는 것처럼 보이지만, 그 이면에 깊은 (<span class="ans-highlight">진리 / 뜻</span>)을 담고 있는 것이다.</td></tr>
+        <tr><td>읽는 중 1<br>'열(10)'의 의미</td><td>- 십진급수에서 제일 먼저 꽉 (<span class="ans-highlight">찬</span>) 수<br>- 이룰 것을 이룩한 (<span class="ans-highlight">완전</span>)한 수 / (<span class="ans-highlight">완벽 / 성취</span>)한 수<br>- *십상(十成): 무엇을 하기에 그 이상 좋을 수가 없이 (<span class="ans-highlight">알맞</span>)은 때</td></tr>
+        <tr><td>읽는 중 2<br>'아홉(9)'의 의미</td><td>- 열보다 (<span class="ans-highlight">하나 / 1</span>)가 모자라는 수<br>- (<span class="ans-highlight">열 / 완성</span>)에 거의 다다른 수<br>- (<span class="ans-highlight">하나 / 1</span>)만 보태면 (<span class="ans-highlight">열 / 10</span>)에 이르게 되는 수<br>- 그래서 매우 (<span class="ans-highlight">아쉬움 / 안타까움</span>)을 느끼게 하는 수</td></tr>
+      </table>
+
+      <h3 style="color:#38bdf8; margin:20px 0 8px; font-size:1.05rem;">[4pg] 3. '아홉(9)'이 사용된 표현 총정리</h3>
+      <table class="ans-table">
+        <tr><th>표현</th><th>뜻풀이 및 빈칸 정답</th></tr>
+        <tr><td>1) 구만리장천</td><td>(<span class="ans-highlight">한없이 / 끝없이</span>) 높고 너른 하늘</td></tr>
+        <tr><td>2) 구곡간장</td><td>굽이굽이 (<span class="ans-highlight">깊이</span>) 서린 마음 (시름이 쌓인 마음속)</td></tr>
+        <tr><td>3) 구절양장</td><td>굽이굽이 에워도는 산굽이가 얼마인지 (<span class="ans-highlight">모르는</span>) 길 (꼬불꼬불하며 험한 산길 / 세상살이가 힘들고 복잡함)</td></tr>
+        <tr><td>4) 구중궁궐</td><td>통과해야 할 문이 몇이나 되는지 (<span class="ans-highlight">모르는</span>) 왕실 (겹겹이 문으로 막은 깊은 궁궐)</td></tr>
+        <tr><td>5) 구사일생</td><td>죽을 고비를 (<span class="ans-highlight">여러 번 / 아홉 번</span>) 넘기고 살아난 것</td></tr>
+        <tr><td>6) 구천</td><td>끝 간 데가 어디인지 모르는 땅 속이나 저승</td></tr>
+        <tr><td>7) 구경</td><td>임금보다 (<span class="ans-highlight">한</span>) 계급 모자라는 대신인 삼공육경(3정승+6조판서)을 일컫는 말</td></tr>
+        <tr><td>8) 국가 유산 탑</td><td>국가 유산도 (<span class="ans-highlight">9 / 구</span>)층 탑은 많지만 (<span class="ans-highlight">10 / 십</span>)층 탑은 잘 보지 못하였음</td></tr>
+        <tr><td>9) 음력 9월 9일</td><td>(<span class="ans-highlight">중양절</span>) 또는 중굿날 (국화차를 마시며 장수를 기원하고 국화전을 부쳐 먹던 가을 명절)</td></tr>
+      </table>
+
+      <h3 style="color:#38bdf8; margin:20px 0 8px; font-size:1.05rem;">[5pg] 읽는 중 활동 (4~7번) & 읽은 후 활동</h3>
+      <table class="ans-table">
+        <tr><th>문항</th><th>학습지 문장 및 빈칸 정답</th></tr>
+        <tr><td>4. 조상들이 9를 사랑한 까닭</td><td>이 세상에 (<span class="ans-highlight">완전한 / 완벽한</span>) 것이 없다는 사실을 알고 있었던 조상들은 모든 일에 (<span class="ans-highlight">완전함 / 완벽함</span>)을 기대하지 않았기 때문이다.</td></tr>
+        <tr><td>5. 기네스북을 해마다 다시 찍는 이유</td><td>기록은 반드시 (<span class="ans-highlight">깨지기</span>) 마련이기 때문이다. 인간은 저마다 무한한 (<span class="ans-highlight">가능성 / 잠재력</span>)을 가지고 타고난 사실과 아울러서, 이 세상에 (<span class="ans-highlight">완전 / 완벽</span>)한 인간 또한 결코 어디에도 있을 수 없다.</td></tr>
+        <tr><td>6. '열(10)'과 '구(9)'의 비교</td><td>- 열(10): 조금의 (<span class="ans-highlight">여지 / 빈틈</span>)도 없이 꽉 찬 수. 그 다음이 없이 끝나버린 수.<br>- 구(9): 다음, 그 다음을 바라볼 수 있는 (<span class="ans-highlight">가능성 / 희망 / 여지</span>)의 수.</td></tr>
+        <tr><td>7. 청소년에게 '구(9)'가 주는 메시지</td><td>- 무엇 한 가지도 (<span class="ans-highlight">완벽 / 완전</span>)할 수 없으며, 항상 어딘가 부족한 것이 오히려 (<span class="ans-highlight">정상 / 당연</span>)입니다.<br>- 행여 남보다 (<span class="ans-highlight">모자란 / 부족한</span>) 것이 아닌가 싶어서 괴로움과 외로움을 느끼는 학생이 있다면...<br>⇒ 자신이 (<span class="ans-highlight">완벽 / 완전</span>)할 수 없는 존재임을 이해하고, 미래의 (<span class="ans-highlight">가능성</span>)과 (<span class="ans-highlight">희망 / 꿈</span>)을 소중히 여기고 살아가자.</td></tr>
+        <tr><td>읽은 후 1. 글의 주제</td><td>9(아홉)이라는 수처럼 청소년은 (<span class="ans-highlight">완벽 / 완전</span>)하지는 않지만 (<span class="ans-highlight">무한한 가능성 / 희망</span>)을 가진 무궁무진한 존재이다.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // GLOBAL GAME STATE & SOUND SYNTHESIZER
+    // =========================================================================
+    let playerName = "용사";
+    let score = 0;
+    let orbs = 0;
+    let soundEnabled = true;
+    const solvedMissions = new Set();
+
+    // 5-Stage Hero Evolution Definition
+    const EVO_STAGES = [
+      { level: 1, icon: '🗡️', aura: '#38bdf8', name: 'Lv.1 초보 수련 용사', skill: '가능성의 베기', desc: '목검을 든 초보 용사지만 무한한 잠재력을 품고 있습니다!' },
+      { level: 2, icon: '⚔️', aura: '#a855f7', name: 'Lv.2 역설의 쌍검 검사', skill: '역설의 십자검기', desc: '모순 속에 담긴 진리를 깨달아 예리한 쌍검 검사로 진화했습니다!' },
+      { level: 3, icon: '🛡️', aura: '#10b981', name: 'Lv.3 구사일생 성기사', skill: '구사일생 불사조 돌격', desc: '아홉 번의 위기를 넘기며 찬란한 성기사의 갑주를 입었습니다!' },
+      { level: 4, icon: '🦁', aura: '#f59e0b', name: 'Lv.4 중양절 황금 용장군', skill: '구곡간장 사자후 파동', desc: '조상들의 지혜와 가을 명절 중양절의 축복을 받은 황금 사자 장군!' },
+      { level: 5, icon: '🐉', aura: '#ec4899', name: 'Lv.5 구만리장천 신화 용사', skill: '열보다 큰 아홉! 신룡 메테오', desc: '한없이 높고 너른 하늘을 지배하며 거대 마룡을 토벌한 전설의 신화 용사!' }
+    ];
+    let currentEvoIdx = 0;
+
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playTone(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'correct') {
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.07);
+          osc.frequency.setValueAtTime(783.99, now + 0.14);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.start(now);
+          osc.stop(now + 0.32);
+        } else if (type === 'slash') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(680, now);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.22);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          osc.start(now);
+          osc.stop(now + 0.24);
+        } else if (type === 'evolve') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(554.37, now + 0.09);
+          osc.frequency.setValueAtTime(659.25, now + 0.18);
+          osc.frequency.setValueAtTime(880, now + 0.27);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+          osc.start(now);
+          osc.stop(now + 0.65);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(200, now);
+          osc.frequency.setValueAtTime(145, now + 0.12);
+          gain.gain.setValueAtTime(0.13, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.start(now);
+          osc.stop(now + 0.28);
+        } else if (type === 'click') {
+          osc.frequency.setValueAtTime(460, now);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          osc.start(now);
+          osc.stop(now + 0.07);
+        }
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 효과음 ON' : '🔇 효과음 OFF';
+    }
+
+    function setEvolutionStage(newIdx) {
+      if (newIdx <= currentEvoIdx) return;
+      currentEvoIdx = Math.min(newIdx, EVO_STAGES.length - 1);
+      const st = EVO_STAGES[currentEvoIdx];
+
+      playTone('evolve');
+
+      const miniIcon = document.getElementById('miniEvoIcon');
+      miniIcon.textContent = st.icon;
+      miniIcon.style.transform = 'scale(1.35)';
+      setTimeout(() => miniIcon.style.transform = 'scale(1)', 350);
+
+      document.getElementById('miniEvoTitle').textContent = st.name;
+      document.getElementById('miniEvoDesc').textContent = st.desc;
+      document.getElementById('advHeroStatus').textContent = `${st.icon} ${st.name} [${st.skill}]`;
+      document.getElementById('certEvoIcon').textContent = st.icon + '👑✨';
+
+      for (let i = 0; i < 5; i++) {
+        const card = document.getElementById('evoCard' + i);
+        if (!card) continue;
+        card.classList.remove('current-evo', 'unlocked');
+        if (i < currentEvoIdx) card.classList.add('unlocked');
+        if (i === currentEvoIdx) card.classList.add('current-evo');
+      }
+
+      const pct = Math.min(100, (currentEvoIdx + 1) * 20);
+      document.getElementById('miniEvoPercent').textContent = pct + '%';
+      document.getElementById('miniEvoFill').style.width = pct + '%';
+
+      const toast = document.getElementById('evoBannerToast');
+      if (toast) {
+        toast.style.display = 'block';
+        toast.innerHTML = `🌟 <strong>용사 진화 성공!</strong> <strong>[${st.icon} ${st.name}]</strong>(으)로 각성하여 필살기 <strong>〈${st.skill}〉</strong>을 획득했습니다!`;
+      }
+    }
+
+    function addReward(missionId, pts) {
+      if (solvedMissions.has(missionId)) return;
+      solvedMissions.add(missionId);
+      score += pts;
+      if (orbs < 9) orbs += 1;
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('orbCount').textContent = `${orbs} / 9`;
+
+      const card = document.getElementById(missionId);
+      if (card) card.classList.add('solved');
+      const badge = document.getElementById('status_' + missionId);
+      if (badge) badge.textContent = '클리어! (+구슬 1)';
+      updateNavBadges();
+
+      if (solvedMissions.size >= 4 && currentEvoIdx < 1) {
+        setEvolutionStage(1);
+      }
+    }
+
+    function updateNavBadges() {
+      if (solvedMissions.has('m1_1') && solvedMissions.has('m1_2') && solvedMissions.has('m1_3')) {
+        document.getElementById('nav1').classList.add('cleared');
+      }
+      if (solvedMissions.has('m2_1') && solvedMissions.has('m2_2')) {
+        document.getElementById('nav2').classList.add('cleared');
+      }
+      if (solvedMissions.has('m3_1') && solvedMissions.has('m3_2')) {
+        document.getElementById('nav3').classList.add('cleared');
+      }
+      if (solvedMissions.has('m4_1') && solvedMissions.has('m4_2')) {
+        document.getElementById('nav4').classList.add('cleared');
+      }
+      if (solvedMissions.has('m5_1') && solvedMissions.has('m5_2')) {
+        document.getElementById('nav5').classList.add('cleared');
+      }
+    }
+
+    function startGame() {
+      const val = document.getElementById('playerNameInput').value.trim();
+      if (val) playerName = val;
+      playTone('click');
+      goStage(1);
+    }
+
+    function goStage(idx) {
+      playTone('click');
+      stopVoiceRecognition();
+      document.querySelectorAll('.stage-panel').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('#stageNav .step-dot').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      if (idx === 6) {
+        startAdventureLoop();
+      } else {
+        stopAdventureLoop();
+      }
+      if (idx === 7) {
+        renderVoiceQuestion();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // STAGES 1~5 WORKSHEET LOGIC
+    // =========================================================================
+    function checkM1_1(btn, isCorrect) {
+      const fb = document.getElementById('fb_m1_1');
+      if (isCorrect) {
+        playTone('correct');
+        btn.classList.add('correct');
+        fb.className = 'feedback-msg show ok';
+        fb.innerHTML = '🎉 <strong>정답입니다!</strong> 원래 10이 9보다 크지만, 글쓴이는 꽉 차서 끝나버린 10보다 <strong>다음과 그 다음을 바라볼 수 있는 가능성의 수 아홉(9)</strong>이 더 가치 있다는 뜻을 제목에 담았습니다.';
+        addReward('m1_1', 100);
+      } else {
+        playTone('wrong');
+        btn.classList.add('wrong');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = '💡 다시 생각해 보세요! 숫자 자체의 계산이 아니라, 아홉(9)이라는 숫자가 지닌 <strong>상징적인 의미(가능성, 여지)</strong>에 주목해 보세요.';
+      }
+    }
+
+    let foundKeywords = 0;
+    function toggleKeyword(btn, isKey) {
+      if (btn.disabled) return;
+      const fb = document.getElementById('fb_m1_2');
+      if (isKey) {
+        playTone('correct');
+        btn.classList.add('correct');
+        btn.disabled = true;
+        foundKeywords++;
+        if (foundKeywords === 3) {
+          fb.className = 'feedback-msg show ok';
+          fb.innerHTML = '🎉 <strong>핵심 키워드 3개를 모두 찾았습니다!</strong><br>• 주요 키워드: <strong>아홉(9), 열(10), 완전함, 아쉬움, 가능성, 청소년</strong>';
+          addReward('m1_2', 100);
+        }
+      } else {
+        playTone('wrong');
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 500);
+      }
+    }
+
+    const blankConfigs = {
+      m1_3: {
+        prefix: 'b1_3_',
+        answers: ['역설', '모순(말이 안)', '진리(뜻)'],
+        current: [null, null, null],
+        chips: [null, null, null],
+        pts: 120,
+        successMsg: '🎉 <strong>암호 해독 완료!</strong> "열보다 큰 아홉"은 겉으로는 <strong>모순</strong>되지만 그 안에 깊은 <strong>진리</strong>를 담은 <strong>역설법</strong> 표현입니다!'
+      },
+      m2_1: {
+        prefix: 'b2_1_',
+        answers: ['찬', '완전', '완벽', '알맞'],
+        current: [null, null, null, null],
+        chips: [null, null, null, null],
+        pts: 120,
+        successMsg: '🎉 <strong>정답입니다!</strong> 열(10)은 제일 먼저 꽉 <strong>찬</strong> 수이자 <strong>완전·완벽</strong>한 수이며, <strong>십상(十成)</strong>은 그 이상 좋을 수가 없이 <strong>알맞</strong>은 때를 뜻합니다.'
+      },
+      m2_2: {
+        prefix: 'b2_2_',
+        answers: ['하나(1)', '열(완성)', '열(10)', '아쉬움(안타까움)'],
+        current: [null, null, null, null],
+        chips: [null, null, null, null],
+        pts: 120,
+        successMsg: '🎉 <strong>정답입니다!</strong> 아홉(9)은 열보다 <strong>하나</strong>가 모자라고, 하나만 보태면 <strong>열</strong>에 이르기에 매우 <strong>아쉬움</strong>을 느끼게 하는 수입니다.'
+      },
+      m3_2: {
+        prefix: 'b3_2_',
+        answers: ['한(1)', '구(9)', '십(10)', '중양절'],
+        current: [null, null, null, null],
+        chips: [null, null, null, null],
+        pts: 140,
+        successMsg: '🎉 <strong>완벽합니다!</strong> 구경(임금보다 <strong>한</strong> 계급 모자라는 대신), <strong>9</strong>층 탑과 <strong>10</strong>층 탑, 음력 9월 9일 <strong>중양절</strong>까지 모두 맞혔습니다!'
+      },
+      m4_1: {
+        prefix: 'b4_1_',
+        answers: ['완전한(완벽한)', '완전함(완벽함)', '깨지기', '가능성(잠재력)', '완전(완벽)'],
+        current: [null, null, null, null, null],
+        chips: [null, null, null, null, null],
+        pts: 150,
+        successMsg: '🎉 <strong>정답입니다!</strong> 조상들은 세상에 <strong>완전한</strong> 것이 없음을 알았고, 기네스북 역시 기록은 반드시 <strong>깨지기</strong> 마련이며 인간에게 무한한 <strong>가능성</strong>이 있음을 보여줍니다.'
+      },
+      m4_2: {
+        prefix: 'b4_2_',
+        answers: ['여지(빈틈)', '가능성(희망)', '완벽(완전)', '정상(당연)', '모자란(부족한)', '가능성', '희망(꿈)'],
+        current: [null, null, null, null, null, null, null],
+        chips: [null, null, null, null, null, null, null],
+        pts: 160,
+        successMsg: '🎉 <strong>감동적인 메시지 완성!</strong> 청소년기에 어딘가 부족한 것은 오히려 <strong>정상</strong>입니다. 미래의 <strong>가능성</strong>과 <strong>희망</strong>을 품은 숫자 9를 사랑해 봅시다!'
+      },
+      m5_1: {
+        prefix: 'b5_1_',
+        answers: ['완벽(완전)', '무한한 가능성(희망)'],
+        current: [null, null],
+        chips: [null, null],
+        pts: 120,
+        successMsg: '🎉 <strong>글의 주제 완성!</strong> "9(아홉)이라는 수처럼 청소년은 <strong>완벽</strong>하지는 않지만 <strong>무한한 가능성</strong>을 가진 무궁무진한 존재이다."'
+      }
+    };
+
+    function fillBlank(missionKey, word, chipEl) {
+      if (chipEl.classList.contains('used')) return;
+      const cfg = blankConfigs[missionKey];
+      const emptyIdx = cfg.current.findIndex(v => v === null);
+      if (emptyIdx === -1) return;
+
+      playTone('click');
+      cfg.current[emptyIdx] = word;
+      cfg.chips[emptyIdx] = chipEl;
+      chipEl.classList.add('used');
+
+      const box = document.getElementById(cfg.prefix + emptyIdx);
+      box.textContent = word;
+      box.classList.add('filled');
+
+      if (cfg.current.every(v => v !== null)) {
+        validateBlanks(missionKey);
+      }
+    }
+
+    function resetBlank(missionKey, idx) {
+      if (solvedMissions.has(missionKey)) return;
+      const cfg = blankConfigs[missionKey];
+      if (cfg.current[idx] === null) return;
+
+      playTone('click');
+      if (cfg.chips[idx]) cfg.chips[idx].classList.remove('used');
+      cfg.current[idx] = null;
+      cfg.chips[idx] = null;
+
+      const box = document.getElementById(cfg.prefix + idx);
+      box.textContent = '?';
+      box.classList.remove('filled');
+    }
+
+    function validateBlanks(missionKey) {
+      const cfg = blankConfigs[missionKey];
+      const fb = document.getElementById('fb_' + missionKey);
+
+      const isAllCorrect = cfg.current.every((val, i) => {
+        if (val === cfg.answers[i]) return true;
+        if (missionKey === 'm4_2' && (i === 1 || i === 5) && val.includes('가능성')) return true;
+        return false;
+      });
+
+      if (isAllCorrect) {
+        playTone('correct');
+        fb.className = 'feedback-msg show ok';
+        fb.innerHTML = cfg.successMsg;
+        addReward(missionKey, cfg.pts);
+      } else {
+        playTone('wrong');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = '❌ 순서가 맞지 않는 빈칸이 있습니다! 파란색 빈칸을 클릭해 비우고 다시 알맞은 순서로 넣어 보세요.';
+        setTimeout(() => {
+          cfg.current.forEach((val, i) => {
+            if (val !== cfg.answers[i]) {
+              resetBlank(missionKey, i);
+            }
+          });
+        }, 700);
+      }
+    }
+
+    const solvedIdioms = new Set();
+    function solveIdiom(num, btn, isCorrect) {
+      if (solvedIdioms.has(num)) return;
+      if (isCorrect) {
+        playTone('correct');
+        btn.classList.add('correct');
+        solvedIdioms.add(num);
+        document.getElementById('ic_' + num).classList.add('cleared');
+        document.getElementById('status_m3_1').textContent = `${solvedIdioms.size} / 5 해제`;
+
+        if (solvedIdioms.size === 5) {
+          const fb = document.getElementById('fb_m3_1');
+          fb.className = 'feedback-msg show ok';
+          fb.innerHTML = '🎉 <strong>다섯 가지 구(九) 성어 봉인 완전 해제!</strong> 구만리장천, 구곡간장, 구절양장, 구중궁궐, 구사일생을 모두 마스터했습니다!';
+          addReward('m3_1', 150);
+        }
+      } else {
+        playTone('wrong');
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 450);
+      }
+    }
+
+    function setSample(qNum, text) {
+      playTone('click');
+      document.getElementById('q' + qNum + 'Input').value = text;
+    }
+
+    function completeReflection() {
+      const q1 = document.getElementById('q1Input').value.trim() || '친구들과 비교하며 내가 부족하다고 느껴 속상했던 적이 있었다.';
+      const q2 = document.getElementById('q2Input').value.trim() || '완벽한 10이 아니어도 괜찮다! 나에게 있는 9의 무한한 가능성과 희망을 믿고 한 걸음씩 성장하겠다.';
+
+      playTone('correct');
+      addReward('m5_2', 200);
+
+      const fb = document.getElementById('fb_m5_2');
+      fb.className = 'feedback-msg show ok';
+      fb.innerHTML = '🎊 <strong>다짐이 저장되었습니다!</strong> 아래 인증서를 확인하고, 이어서 <strong>제6관문(용사 액션)</strong>과 <strong>제7관문(음성인식 퀴즈)</strong>으로 출격하세요!';
+
+      document.getElementById('certName').textContent = playerName;
+      document.getElementById('certQ1').textContent = q1;
+      document.getElementById('certQ2').textContent = q2;
+      const certBox = document.getElementById('certBox');
+      certBox.style.display = 'block';
+      certBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // STAGE 6: 2D ACTION ADVENTURE + QUIZ MONSTERS + GIANT BOSS TYPING RAID
+    // =========================================================================
+    const advCanvas = document.getElementById('adventureCanvas');
+    const advCtx = advCanvas.getContext('2d');
+    let advLoopId = null;
+
+    const WORLD_WIDTH = 2350;
+    const GROUND_Y = 255;
+    let hero = {
+      x: 90,
+      y: GROUND_Y,
+      vy: 0,
+      moveDir: 0,
+      speed: 5.2,
+      jumping: false,
+      autoDashing: false,
+      slashTimer: 0
+    };
+
+    let floatingEffects = [];
+
+    const FIELD_MONSTERS = [
+      {
+        id: 0,
+        name: '1구역 수문장 : 모순의 골렘',
+        icon: '🗿',
+        x: 420,
+        alive: true,
+        evolveTo: 1,
+        q: '제목 〈열보다 큰 아홉〉에 쓰인 표현법으로, 겉으로는 모순되지만 그 안에 깊은 진리를 담고 있는 표현법은?',
+        options: [
+          { text: '역설법 (예: 소리 없는 아우성, 작은 거인)', correct: true },
+          { text: '직유법 (예: 구름같이 흰 양떼)', correct: false },
+          { text: '의인법 (예: 웃고 있는 들꽃)', correct: false }
+        ]
+      },
+      {
+        id: 1,
+        name: '2구역 수문장 : 꼬불꼬불 산길 도깨비',
+        icon: '👹',
+        x: 860,
+        alive: true,
+        evolveTo: 2,
+        q: '다음 중 "아홉(9)"이 들어간 표현과 그 뜻이 바르게 연결된 것은 무엇일까요?',
+        options: [
+          { text: '구절양장 : 죽을 고비를 여러 번 넘기고 살아난 것', correct: false },
+          { text: '구경(삼공육경) : 임금보다 한 계급 모자라는 대신(3정승+6조판서)', correct: true },
+          { text: '구만리장천 : 통과해야 할 문이 몇이나 되는지 모르는 깊은 왕실', correct: false }
+        ]
+      },
+      {
+        id: 2,
+        name: '3구역 수문장 : 천년 석탑 가고일',
+        icon: '🦇',
+        x: 1300,
+        alive: true,
+        evolveTo: 3,
+        q: '우리 조상들이 숫자 "아홉(9)"을 사랑한 까닭과 전통문화의 모습으로 알맞은 것은?',
+        options: [
+          { text: '세상에 완전한 것이 없음을 알고 모든 일에 완전함을 기대하지 않았으며, 9층 탑과 중양절(음력 9월 9일)을 즐겼다.', correct: true },
+          { text: '모든 일에 빈틈없는 100% 완벽함만을 기대하여 10층 탑만 많이 세웠다.', correct: false }
+        ]
+      },
+      {
+        id: 3,
+        name: '4구역 수문장 : 완벽 강박의 암흑기사',
+        icon: '🥷',
+        x: 1720,
+        alive: true,
+        evolveTo: 3,
+        q: '이 글에서 "기네스북을 해마다 다시 찍어내는 이유"와 "청소년에게 주는 메시지"로 가장 알맞은 것은?',
+        options: [
+          { text: '기록은 반드시 깨지기 마련이며, 청소년은 완벽하지 않지만 무한한 가능성과 희망을 가진 존재이다.', correct: true },
+          { text: '열(10)이야말로 다음을 바라볼 수 있는 여지가 남는 수이므로 무조건 10만 추구해야 한다.', correct: false }
+        ]
+      }
+    ];
+
+    const GIANT_BOSS = {
+      name: '심연의 거대 마룡 〈만점마왕 텐(10)〉',
+      icon: '🐉',
+      x: 2130,
+      maxHp: 5,
+      hp: 5,
+      alive: true,
+      hitShake: 0
+    };
+
+    const BOSS_TYPING_QUESTIONS = [
+      {
+        clue: '겉으로는 모순되는(말이 안 되는) 것처럼 보이지만, 그 이면에 깊은 진리를 담고 있는 표현법은? (예: 열보다 큰 아홉, 소리 없는 아우성)',
+        answers: ['역설법', '역설'],
+        displayAns: '역설법 (또는 역설)',
+        chosung: 'ㅇㅅㅂ (또는 ㅇㅅ)',
+        firstChar: '역'
+      },
+      {
+        clue: '[아홉 구(九) 성어] "한없이 높고 너른 하늘"을 뜻하며, "앞길이 OOOOO이다"처럼 쓰이는 5글자 말은?',
+        answers: ['구만리장천'],
+        displayAns: '구만리장천',
+        chosung: 'ㄱㅁㄹㅈㅊ',
+        firstChar: '구만'
+      },
+      {
+        clue: '[아홉 구(九) 성어] "굽이굽이 깊이 서린 마음(또는 시름이 쌓인 깊은 마음속)"을 비유하며, "OOOO이 녹는 아픔"처럼 쓰이는 4글자 성어는?',
+        answers: ['구곡간장'],
+        displayAns: '구곡간장',
+        chosung: 'ㄱㄱㄱㅈ',
+        firstChar: '구곡'
+      },
+      {
+        clue: '[아홉 구(九) 성어] "죽을 고비를 여러 번(아홉 번) 넘기고 간신히 살아난 것"을 뜻하는 4글자 사자성어는?',
+        answers: ['구사일생'],
+        displayAns: '구사일생',
+        chosung: 'ㄱㅅㅇㅅ',
+        firstChar: '구사'
+      },
+      {
+        clue: '[전통 명절] 음력 9월 9일에 지내는 세시풍속으로, 국화차를 마시며 장수를 기원하고 국화전을 부쳐 먹던 가을 명절의 이름은? (3글자)',
+        answers: ['중양절', '중굿날'],
+        displayAns: '중양절 (또는 중굿날)',
+        chosung: 'ㅈㅇㅈ (또는 ㅈㄱㄴ)',
+        firstChar: '중'
+      }
+    ];
+
+    let activeEncounterMonster = null;
+    let inBossTypingBattle = false;
+    let bossQuestionIdx = 0;
+
+    const advKeys = {};
+    window.addEventListener('keydown', (e) => {
+      advKeys[e.code] = true;
+      if (e.code === 'Space' && document.getElementById('stage6').classList.contains('active')) {
+        if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          heroJump();
+        }
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      advKeys[e.code] = false;
+    });
+
+    function setMove(dir) {
+      hero.moveDir = dir;
+      hero.autoDashing = false;
+    }
+
+    function heroJump() {
+      if (!hero.jumping) {
+        playTone('click');
+        hero.vy = -11.5;
+        hero.jumping = true;
+      }
+    }
+
+    function autoAdvanceToNextMonster() {
+      playTone('click');
+      hero.autoDashing = true;
+    }
+
+    function jumpToGiantBoss() {
+      playTone('evolve');
+      FIELD_MONSTERS.forEach(m => m.alive = false);
+      if (currentEvoIdx < 3) setEvolutionStage(3);
+      updateKillCounter();
+      hero.x = GIANT_BOSS.x - 170;
+      hero.autoDashing = false;
+      triggerBossTypingRaid();
+    }
+
+    function resetAdventure() {
+      playTone('click');
+      FIELD_MONSTERS.forEach(m => m.alive = true);
+      GIANT_BOSS.hp = GIANT_BOSS.maxHp;
+      GIANT_BOSS.alive = true;
+      bossQuestionIdx = 0;
+      activeEncounterMonster = null;
+      inBossTypingBattle = false;
+      hero.x = 90;
+      hero.y = GROUND_Y;
+      hero.autoDashing = false;
+      updateKillCounter();
+      setDockMode('explore');
+      document.getElementById('combatDock').classList.remove('boss-mode');
+      document.getElementById('autoDashBtn').disabled = false;
+    }
+
+    function updateKillCounter() {
+      const killed = FIELD_MONSTERS.filter(m => !m.alive).length;
+      document.getElementById('advKillCount').textContent = `${killed} / 4`;
+      const zones = [
+        '던전 1구역 : 역설의 숲',
+        '던전 2구역 : 구절양장 협곡',
+        '던전 3구역 : 천년 석탑 유적',
+        '던전 4구역 : 기네스의 회랑',
+        '🔥 최종 구역 : 만점마왕 텐(10)의 왕좌'
+      ];
+      document.getElementById('advZoneLabel').textContent = zones[Math.min(killed, 4)];
+    }
+
+    function setDockMode(mode) {
+      document.getElementById('dockExploreMode').style.display = mode === 'explore' ? 'block' : 'none';
+      document.getElementById('dockQuizMode').style.display = mode === 'quiz' ? 'block' : 'none';
+      document.getElementById('dockBossTypingMode').style.display = mode === 'boss' ? 'block' : 'none';
+    }
+
+    function startAdventureLoop() {
+      if (advLoopId) cancelAnimationFrame(advLoopId);
+      loopAdventure();
+    }
+
+    function stopAdventureLoop() {
+      if (advLoopId) {
+        cancelAnimationFrame(advLoopId);
+        advLoopId = null;
+      }
+    }
+
+    function loopAdventure() {
+      updateAdventurePhysics();
+      renderAdventureCanvas();
+      advLoopId = requestAnimationFrame(loopAdventure);
+    }
+
+    function updateAdventurePhysics() {
+      if (activeEncounterMonster || inBossTypingBattle) {
+        if (hero.jumping) {
+          hero.y += hero.vy;
+          hero.vy += 0.65;
+          if (hero.y >= GROUND_Y) {
+            hero.y = GROUND_Y;
+            hero.vy = 0;
+            hero.jumping = false;
+          }
+        }
+        return;
+      }
+
+      let dir = hero.moveDir;
+      if (advKeys['ArrowLeft']) dir = -1;
+      if (advKeys['ArrowRight']) dir = 1;
+      if (hero.autoDashing) dir = 1;
+
+      hero.x += dir * (hero.speed + currentEvoIdx * 0.6);
+      hero.x = Math.max(40, Math.min(WORLD_WIDTH - 100, hero.x));
+
+      if (hero.jumping) {
+        hero.y += hero.vy;
+        hero.vy += 0.65;
+        if (hero.y >= GROUND_Y) {
+          hero.y = GROUND_Y;
+          hero.vy = 0;
+          hero.jumping = false;
+        }
+      }
+
+      for (const m of FIELD_MONSTERS) {
+        if (m.alive && Math.abs(hero.x - m.x) < 75) {
+          hero.x = m.x - 75;
+          hero.autoDashing = false;
+          hero.moveDir = 0;
+          triggerMonsterEncounter(m);
+          return;
+        }
+      }
+
+      if (GIANT_BOSS.alive && Math.abs(hero.x - GIANT_BOSS.x) < 165) {
+        hero.x = GIANT_BOSS.x - 165;
+        hero.autoDashing = false;
+        hero.moveDir = 0;
+        triggerBossTypingRaid();
+      }
+    }
+
+    function triggerMonsterEncounter(monster) {
+      activeEncounterMonster = monster;
+      playTone('click');
+      setDockMode('quiz');
+
+      document.getElementById('encMonsterBadge').textContent = `⚔️ ${monster.icon} ${monster.name} 출현!`;
+      document.getElementById('encQuestionText').textContent = monster.q;
+      const fb = document.getElementById('encFeedback');
+      fb.className = 'feedback-msg';
+
+      const grid = document.getElementById('encOptionsGrid');
+      grid.innerHTML = '';
+      monster.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt.text;
+        btn.onclick = () => resolveMonsterQuiz(btn, opt.correct);
+        grid.appendChild(btn);
+      });
+    }
+
+    function resolveMonsterQuiz(btn, isCorrect) {
+      const fb = document.getElementById('encFeedback');
+      if (isCorrect) {
+        playTone('slash');
+        btn.classList.add('correct');
+        document.querySelectorAll('#encOptionsGrid .option-btn').forEach(b => b.disabled = true);
+
+        const m = activeEncounterMonster;
+        m.alive = false;
+        hero.slashTimer = 22;
+        heroJump();
+
+        floatingEffects.push({
+          x: m.x,
+          y: GROUND_Y - 60,
+          text: `⚡ ${EVO_STAGES[currentEvoIdx].skill}! 격파!`,
+          color: '#fde047',
+          life: 55
+        });
+
+        score += 150;
+        document.getElementById('scoreVal').textContent = score;
+        updateKillCounter();
+
+        if (m.evolveTo > currentEvoIdx) {
+          setEvolutionStage(m.evolveTo);
+        }
+
+        fb.className = 'feedback-msg show ok';
+        fb.innerHTML = `🗡️ <strong>몬스터 격파 성공!</strong> 용사가 검기로 적을 물리쳤습니다! 계속 오른쪽으로 전진하세요!`;
+
+        setTimeout(() => {
+          activeEncounterMonster = null;
+          setDockMode('explore');
+        }, 1100);
+      } else {
+        playTone('wrong');
+        btn.classList.add('wrong');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = '🛡️ 몬스터가 공격을 막아냈습니다! 다른 정답을 선택해 다시 베어 보세요!';
+      }
+    }
+
+    // Giant Boss Typing Raid
+    function triggerBossTypingRaid() {
+      inBossTypingBattle = true;
+      setDockMode('boss');
+      document.getElementById('combatDock').classList.add('boss-mode');
+      document.getElementById('typingArenaBox').style.display = 'block';
+      document.getElementById('bossVictoryPanel').style.display = 'none';
+      renderBossTypingPrompt();
+      setTimeout(() => {
+        const inp = document.getElementById('bossTypingInput');
+        if (inp) inp.focus();
+      }, 150);
+    }
+
+    function renderBossTypingPrompt() {
+      const qObj = BOSS_TYPING_QUESTIONS[bossQuestionIdx];
+      document.getElementById('bossPhaseCount').textContent = `${GIANT_BOSS.hp} / ${GIANT_BOSS.maxHp}`;
+      document.getElementById('typingStepLabel').textContent = `🔥 거대 마룡 타이핑 타격 (${bossQuestionIdx + 1} / ${BOSS_TYPING_QUESTIONS.length})`;
+      document.getElementById('typingLengthHint').textContent = `글자 수 힌트: ${qObj.answers[0].length}글자`;
+      document.getElementById('typingClueText').textContent = qObj.clue;
+
+      const inp = document.getElementById('bossTypingInput');
+      inp.value = '';
+      document.getElementById('bossHintDisplay').textContent = '';
+      document.getElementById('bossTypingFeedback').className = 'feedback-msg';
+    }
+
+    function showChosungHint() {
+      playTone('click');
+      const qObj = BOSS_TYPING_QUESTIONS[bossQuestionIdx];
+      document.getElementById('bossHintDisplay').textContent = `💡 초성 힌트: [ ${qObj.chosung} ]`;
+      document.getElementById('bossTypingInput').focus();
+    }
+
+    function showFirstCharHint() {
+      playTone('click');
+      const qObj = BOSS_TYPING_QUESTIONS[bossQuestionIdx];
+      document.getElementById('bossHintDisplay').textContent = `🔍 첫 글자 힌트: "${qObj.firstChar}..."`;
+      document.getElementById('bossTypingInput').focus();
+    }
+
+    function submitBossTyping() {
+      if (!GIANT_BOSS.alive) return;
+      const inp = document.getElementById('bossTypingInput');
+      const rawVal = inp.value.trim().replace(/\s+/g, '');
+      const qObj = BOSS_TYPING_QUESTIONS[bossQuestionIdx];
+      const fb = document.getElementById('bossTypingFeedback');
+
+      if (!rawVal) {
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = '⚠️ 단어를 입력한 뒤 Enter 또는 [검기 발사] 버튼을 눌러주세요!';
+        return;
+      }
+
+      const isMatch = qObj.answers.some(ans => ans === rawVal);
+
+      if (isMatch) {
+        playTone('slash');
+        heroJump();
+        hero.slashTimer = 28;
+        GIANT_BOSS.hp = Math.max(0, GIANT_BOSS.hp - 1);
+        GIANT_BOSS.hitShake = 24;
+
+        floatingEffects.push({
+          x: GIANT_BOSS.x - 20,
+          y: GROUND_Y - 120,
+          text: `💥 CRITICAL! "${qObj.displayAns}" 직격! (-2,000 HP)`,
+          color: '#34d399',
+          life: 65
+        });
+
+        score += 250;
+        document.getElementById('scoreVal').textContent = score;
+        document.getElementById('bossPhaseCount').textContent = `${GIANT_BOSS.hp} / ${GIANT_BOSS.maxHp}`;
+
+        fb.className = 'feedback-msg show ok';
+        fb.innerHTML = `⚡ <strong>정확한 타이핑 타격! [${qObj.displayAns}]</strong> 필살기가 거대 마룡에게 적중했습니다!`;
+
+        if (GIANT_BOSS.hp <= 0) {
+          GIANT_BOSS.alive = false;
+          setEvolutionStage(4);
+          document.getElementById('nav6').classList.add('cleared');
+          setTimeout(() => {
+            document.getElementById('typingArenaBox').style.display = 'none';
+            document.getElementById('bossVictoryPanel').style.display = 'block';
+          }, 900);
+        } else {
+          bossQuestionIdx = (bossQuestionIdx + 1) % BOSS_TYPING_QUESTIONS.length;
+          setTimeout(() => {
+            renderBossTypingPrompt();
+            inp.focus();
+          }, 850);
+        }
+      } else {
+        playTone('wrong');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = `❌ <strong>"${inp.value}"</strong>(은)는 마룡의 방어막에 튕겨 나갔습니다! <strong>[💡 초성 힌트 보기]</strong>를 눌러 단어를 확인해 보세요.`;
+        inp.select();
+      }
+    }
+
+    function restartBossRaid() {
+      playTone('evolve');
+      GIANT_BOSS.hp = GIANT_BOSS.maxHp;
+      GIANT_BOSS.alive = true;
+      bossQuestionIdx = 0;
+      triggerBossTypingRaid();
+    }
+
+    // Canvas Renderer for Stage 6
+    function renderAdventureCanvas() {
+      const w = advCanvas.width;
+      const h = advCanvas.height;
+      advCtx.clearRect(0, 0, w, h);
+
+      const camX = Math.max(0, Math.min(WORLD_WIDTH - w, hero.x - 220));
+
+      const skyGrad = advCtx.createLinearGradient(0, 0, 0, h);
+      skyGrad.addColorStop(0, '#090d16');
+      skyGrad.addColorStop(0.65, '#1e1b4b');
+      skyGrad.addColorStop(1, '#0f172a');
+      advCtx.fillStyle = skyGrad;
+      advCtx.fillRect(0, 0, w, h);
+
+      advCtx.fillStyle = 'rgba(255,255,255,0.35)';
+      for (let i = 0; i < 30; i++) {
+        const sx = ((i * 137) - camX * 0.2) % w;
+        const sy = (i * 53) % 160;
+        advCtx.fillRect(sx < 0 ? sx + w : sx, sy, 2, 2);
+      }
+
+      advCtx.save();
+      advCtx.translate(-camX, 0);
+
+      advCtx.fillStyle = '#1e293b';
+      advCtx.fillRect(0, GROUND_Y + 15, WORLD_WIDTH, h - GROUND_Y);
+      advCtx.strokeStyle = '#38bdf8';
+      advCtx.lineWidth = 3;
+      advCtx.beginPath();
+      advCtx.moveTo(0, GROUND_Y + 15);
+      advCtx.lineTo(WORLD_WIDTH, GROUND_Y + 15);
+      advCtx.stroke();
+
+      const signs = [
+        { x: 180, label: '출발: 수련의 숲' },
+        { x: 640, label: '구절양장 고개 →' },
+        { x: 1100, label: '천년 9층 석탑 →' },
+        { x: 1540, label: '기네스 회랑 →' },
+        { x: 1920, label: '⚠️ 거대 마룡의 둥지' }
+      ];
+      signs.forEach(sg => {
+        advCtx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+        advCtx.fillRect(sg.x, GROUND_Y - 38, 125, 26);
+        advCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+        advCtx.strokeRect(sg.x, GROUND_Y - 38, 125, 26);
+        advCtx.fillStyle = '#94a3b8';
+        advCtx.font = 'bold 11px Pretendard, sans-serif';
+        advCtx.textAlign = 'center';
+        advCtx.fillText(sg.label, sg.x + 62, GROUND_Y - 21);
+      });
+
+      FIELD_MONSTERS.forEach(m => {
+        if (!m.alive) {
+          advCtx.font = '18px sans-serif';
+          advCtx.fillStyle = 'rgba(16, 185, 129, 0.5)';
+          advCtx.textAlign = 'center';
+          advCtx.fillText('✨정화됨', m.x, GROUND_Y + 5);
+          return;
+        }
+        advCtx.fillStyle = 'rgba(239, 68, 68, 0.18)';
+        advCtx.beginPath();
+        advCtx.arc(m.x, GROUND_Y - 18, 36, 0, Math.PI * 2);
+        advCtx.fill();
+
+        advCtx.font = '46px sans-serif';
+        advCtx.textAlign = 'center';
+        advCtx.fillText(m.icon, m.x, GROUND_Y);
+
+        advCtx.font = 'bold 12px Pretendard, sans-serif';
+        advCtx.fillStyle = '#fca5a5';
+        advCtx.fillText(m.name, m.x, GROUND_Y - 52);
+      });
+
+      if (GIANT_BOSS.alive) {
+        const shakeX = GIANT_BOSS.hitShake > 0 ? (Math.random() - 0.5) * 18 : 0;
+        if (GIANT_BOSS.hitShake > 0) GIANT_BOSS.hitShake--;
+
+        const bx = GIANT_BOSS.x + shakeX;
+        const by = GROUND_Y - 10;
+
+        const bossAura = advCtx.createRadialGradient(bx, by - 55, 15, bx, by - 55, 125);
+        bossAura.addColorStop(0, 'rgba(220, 38, 38, 0.55)');
+        bossAura.addColorStop(1, 'rgba(220, 38, 38, 0)');
+        advCtx.fillStyle = bossAura;
+        advCtx.beginPath();
+        advCtx.arc(bx, by - 55, 125, 0, Math.PI * 2);
+        advCtx.fill();
+
+        advCtx.font = '110px sans-serif';
+        advCtx.textAlign = 'center';
+        advCtx.fillText(GIANT_BOSS.icon, bx, by);
+
+        advCtx.font = 'bold 15px Pretendard, sans-serif';
+        advCtx.fillStyle = '#fef08a';
+        advCtx.fillText('👑 ' + GIANT_BOSS.name, bx, by - 135);
+
+        const barW = 180;
+        const barH = 14;
+        advCtx.fillStyle = '#020617';
+        advCtx.fillRect(bx - barW / 2, by - 125, barW, barH);
+        advCtx.fillStyle = '#ef4444';
+        advCtx.fillRect(bx - barW / 2, by - 125, (GIANT_BOSS.hp / GIANT_BOSS.maxHp) * barW, barH);
+        advCtx.strokeStyle = '#fca5a5';
+        advCtx.strokeRect(bx - barW / 2, by - 125, barW, barH);
+
+        advCtx.font = 'bold 11px Pretendard, sans-serif';
+        advCtx.fillStyle = '#fff';
+        advCtx.fillText(`타이핑 실드 HP: ${GIANT_BOSS.hp} / ${GIANT_BOSS.maxHp}`, bx, by - 114);
+      } else {
+        advCtx.font = '68px sans-serif';
+        advCtx.textAlign = 'center';
+        advCtx.fillText('🏆', GIANT_BOSS.x, GROUND_Y - 10);
+        advCtx.font = 'bold 15px Pretendard, sans-serif';
+        advCtx.fillStyle = '#fde047';
+        advCtx.fillText('만점마왕 텐(10) 토벌 완료!', GIANT_BOSS.x, GROUND_Y - 85);
+      }
+
+      const st = EVO_STAGES[currentEvoIdx];
+      const heroRadius = 32 + currentEvoIdx * 5;
+      const heroGlow = advCtx.createRadialGradient(hero.x, hero.y - 22, 5, hero.x, hero.y - 22, heroRadius);
+      heroGlow.addColorStop(0, st.aura);
+      heroGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      advCtx.fillStyle = heroGlow;
+      advCtx.beginPath();
+      advCtx.arc(hero.x, hero.y - 22, heroRadius, 0, Math.PI * 2);
+      advCtx.fill();
+
+      const fontSize = 44 + currentEvoIdx * 5;
+      advCtx.font = `${fontSize}px sans-serif`;
+      advCtx.textAlign = 'center';
+      advCtx.fillText(st.icon, hero.x, hero.y);
+
+      advCtx.font = 'bold 12px Pretendard, sans-serif';
+      advCtx.fillStyle = '#fde047';
+      advCtx.fillText(`${playerName} (${st.name.split(' ')[0]})`, hero.x, hero.y - fontSize - 6);
+
+      if (hero.slashTimer > 0) {
+        hero.slashTimer--;
+        advCtx.strokeStyle = '#fde047';
+        advCtx.lineWidth = 6;
+        advCtx.beginPath();
+        advCtx.arc(hero.x + 55, hero.y - 28, 48, -Math.PI / 2.2, Math.PI / 2.2);
+        advCtx.stroke();
+
+        advCtx.font = '34px sans-serif';
+        advCtx.fillText('⚡', hero.x + 75, hero.y - 20);
+      }
+
+      for (let i = floatingEffects.length - 1; i >= 0; i--) {
+        const ef = floatingEffects[i];
+        ef.y -= 1.2;
+        ef.life--;
+        advCtx.font = 'bold 16px Pretendard, sans-serif';
+        advCtx.fillStyle = ef.color;
+        advCtx.textAlign = 'center';
+        advCtx.fillText(ef.text, ef.x, ef.y);
+        if (ef.life <= 0) floatingEffects.splice(i, 1);
+      }
+
+      advCtx.restore();
+    }
+
+    // =========================================================================
+    // STAGE 7: VOICE RECOGNITION (WEB SPEECH API) MAGIC SPELL QUIZ
+    // =========================================================================
+    const VOICE_QUESTIONS = [
+      {
+        q: '질문 1. 9와 10 중에서, 꽉 차서 끝나버린 수가 아니라 다음을 바라볼 수 있는 "가능성의 숫자"는 무엇일까요?',
+        mainAns: '아홉 (또는 구)',
+        hint: '💡 힌트: 글자 수 2글자 [ ㅇㅎ ] 또는 한자어 [ ㄱ ]',
+        accepted: ['아홉', '구', '9', '구번', '아홉번', '숫자아홉', '숫자구', '숫자9']
+      },
+      {
+        q: '질문 2. "열보다 큰 아홉", "소리 없는 아우성"처럼 겉으로는 모순되지만 깊은 진리를 담고 있는 표현법은 무엇일까요?',
+        mainAns: '역설법 (또는 역설)',
+        hint: '💡 힌트: 3글자 [ ㅇㅅㅂ ] 또는 2글자 [ ㅇㅅ ]',
+        accepted: ['역설법', '역설', '역설적', '역설법이요']
+      },
+      {
+        q: '질문 3. 죽을 고비를 여러 번(아홉 번) 넘기고 간신히 살아난 것을 뜻하는 네 글자 사자성어는 무엇일까요?',
+        mainAns: '구사일생',
+        hint: '💡 힌트: 4글자 사자성어 [ ㄱㅅㅇㅅ ]',
+        accepted: ['구사일생', '941생', '구사일생이요', '구사일생입니다', '구사']
+      },
+      {
+        q: '질문 4. "한없이 높고 너른 하늘"을 뜻하며, "앞길이 OOOOO이다"에 쓰이는 다섯 글자 성어는 무엇일까요?',
+        mainAns: '구만리장천',
+        hint: '💡 힌트: 5글자 성어 [ ㄱㅁㄹㅈㅊ ]',
+        accepted: ['구만리장천', '9만리장천', '구만리', '장천']
+      },
+      {
+        q: '질문 5. 음력 9월 9일에 국화차와 국화전을 나누며 장수를 기원하던 전통 가을 명절의 이름은 무엇일까요?',
+        mainAns: '중양절 (또는 중굿날)',
+        hint: '💡 힌트: 3글자 [ ㅈㅇㅈ ] 또는 [ ㅈㄱㄴ ]',
+        accepted: ['중양절', '중앙절', '중굿날', '중구날', '중양']
+      },
+      {
+        q: '마지막 질문 6. 이 글에서 9(아홉)라는 숫자처럼 청소년이 품고 있는 무궁무진한 힘은 무엇일까요? 세 글자로 외쳐 보세요!',
+        mainAns: '가능성 (또는 희망)',
+        hint: '💡 힌트: 3글자 [ ㄱㄴㅅ ] (또는 2글자 [ ㅎㅁ ])',
+        accepted: ['가능성', '무한한가능성', '희망', '잠재력']
+      }
+    ];
+
+    let voiceIdx = 0;
+    let recognition = null;
+    let isListening = false;
+
+    function initSpeechRecognition() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) return null;
+
+      const rec = new SpeechRec();
+      rec.lang = 'ko-KR';
+      rec.interimResults = true;
+      rec.maxAlternatives = 5;
+
+      rec.onstart = () => {
+        isListening = true;
+        document.getElementById('micBtn').classList.add('listening');
+        document.getElementById('voiceWaveBars').classList.add('active');
+        document.getElementById('micStatusLabel').textContent = '👂 지금 듣고 있습니다! 정답 단어를 크게 말해주세요...';
+      };
+
+      rec.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+        const candidates = [];
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          for (let j = 0; j < res.length; j++) {
+            candidates.push(res[j].transcript);
+          }
+          if (res.isFinal) {
+            finalTranscript += res[0].transcript;
+          } else {
+            interimTranscript += res[0].transcript;
+          }
+        }
+
+        const displayStr = (finalTranscript || interimTranscript).trim();
+        document.getElementById('voiceTranscriptBox').textContent = `🗣️ 내 목소리 인식 결과: "${displayStr}"`;
+
+        // Check all alternatives & interim/final strings for a match
+        checkVoiceAnswer(candidates.concat([displayStr]), finalTranscript !== '');
+      };
+
+      rec.onerror = (event) => {
+        stopVoiceRecognition();
+        const fb = document.getElementById('voiceFeedback');
+        fb.className = 'feedback-msg show err';
+        if (event.error === 'not-allowed') {
+          fb.innerHTML = '⚠️ 브라우저 상단 주소창의 <strong>[마이크 권한 허용]</strong>을 눌러주거나, 아래의 <strong>[비상 주문창]</strong>을 이용해 주세요!';
+        } else {
+          fb.innerHTML = `🎙️ 음성이 잘 들리지 않았어요 (${event.error}). 다시 🎙️ 마이크 버튼을 누르고 또렷하게 외쳐 보세요!`;
+        }
+      };
+
+      rec.onend = () => {
+        stopVoiceRecognition();
+      };
+
+      return rec;
+    }
+
+    function toggleVoiceRecognition() {
+      playTone('click');
+      if (isListening) {
+        stopVoiceRecognition();
+        return;
+      }
+
+      if (!recognition) {
+        recognition = initSpeechRecognition();
+      }
+
+      if (!recognition) {
+        const fb = document.getElementById('voiceFeedback');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = '⚠️ 현재 브라우저에서 음성인식(Web Speech API)을 지원하지 않습니다. 크롬(Chrome) 또는 엣지(Edge) 브라우저를 사용하거나 아래 비상 주문창을 이용해 주세요!';
+        return;
+      }
+
+      try {
+        document.getElementById('voiceFeedback').className = 'feedback-msg';
+        document.getElementById('voiceTranscriptBox').textContent = '🗣️ 내 목소리 인식 중...';
+        recognition.start();
+      } catch (e) {
+        stopVoiceRecognition();
+      }
+    }
+
+    function stopVoiceRecognition() {
+      isListening = false;
+      const micBtn = document.getElementById('micBtn');
+      if (micBtn) micBtn.classList.remove('listening');
+      const wave = document.getElementById('voiceWaveBars');
+      if (wave) wave.classList.remove('active');
+      const lbl = document.getElementById('micStatusLabel');
+      if (lbl) lbl.textContent = '위 🎙️ 마이크 버튼을 누르고 정답 단어를 크게 말해보세요!';
+      if (recognition) {
+        try { recognition.stop(); } catch (e) {}
+      }
+    }
+
+    function renderVoiceQuestion() {
+      const vq = VOICE_QUESTIONS[voiceIdx];
+      document.getElementById('vqStepBadge').textContent = `음성 주문 ${voiceIdx + 1} / ${VOICE_QUESTIONS.length}`;
+      document.getElementById('vqQuestionText').textContent = vq.q;
+      document.getElementById('vqHintBox').textContent = '';
+      document.getElementById('voiceTranscriptBox').textContent = '🗣️ 내 목소리 인식 결과: 대기 중...';
+      document.getElementById('voiceFeedback').className = 'feedback-msg';
+      document.getElementById('voiceNextBtnWrap').style.display = 'none';
+      document.getElementById('voiceFallbackInput').value = '';
+
+      for (let i = 0; i < VOICE_QUESTIONS.length; i++) {
+        const dot = document.getElementById('vdot' + i);
+        dot.classList.remove('active');
+        if (i === voiceIdx) dot.classList.add('active');
+      }
+    }
+
+    function checkVoiceAnswer(transcriptList, isFinal) {
+      const vq = VOICE_QUESTIONS[voiceIdx];
+      const normalizedList = transcriptList.map(t => t.replace(/\s+/g, '').replace(/[.,!?]/g, ''));
+
+      const matched = normalizedList.some(spoken =>
+        vq.accepted.some(ans => spoken.includes(ans))
+      );
+
+      if (matched) {
+        stopVoiceRecognition();
+        handleVoiceSuccess( normalizedList[0] || vq.mainAns );
+      } else if (isFinal) {
+        playTone('wrong');
+        const fb = document.getElementById('voiceFeedback');
+        fb.className = 'feedback-msg show err';
+        fb.innerHTML = `🤔 <strong>"${transcriptList[0]}"</strong>(으)로 들렸어요! <strong>[💡 초성/글자수 힌트]</strong>를 확인하고 다시 🎙️ 마이크 버튼을 눌러 외쳐 보세요!`;
+      }
+    }
+
+    function handleVoiceSuccess(recognizedWord) {
+      const vq = VOICE_QUESTIONS[voiceIdx];
+      playTone('evolve');
+
+      document.getElementById('vdot' + voiceIdx).classList.add('cleared');
+      score += 200;
+      document.getElementById('scoreVal').textContent = score;
+
+      const fb = document.getElementById('voiceFeedback');
+      fb.className = 'feedback-msg show ok';
+      fb.innerHTML = `🎉 <strong>음성 주문 인식 대성공!</strong> 정답: <strong>[${vq.mainAns}]</strong>! 마법 봉인이 해제되었습니다!`;
+
+      const nextWrap = document.getElementById('voiceNextBtnWrap');
+      const nextBtn = document.getElementById('voiceNextBtn');
+      nextWrap.style.display = 'block';
+
+      if (voiceIdx === VOICE_QUESTIONS.length - 1) {
+        setEvolutionStage(4);
+        document.getElementById('nav7').classList.add('cleared');
+        nextBtn.textContent = '🏆 최종 올클리어 축하 화면 보기!';
+      } else {
+        nextBtn.textContent = `다음 음성 주문(${voiceIdx + 2}번)으로 이동! 🎙️→`;
+      }
+    }
+
+    function nextVoiceQuestion() {
+      playTone('click');
+      if (voiceIdx < VOICE_QUESTIONS.length - 1) {
+        voiceIdx++;
+        renderVoiceQuestion();
+      } else {
+        document.getElementById('voiceActiveArea').style.display = 'none';
+        document.getElementById('voiceVictoryArea').style.display = 'block';
+        document.getElementById('finalHeroName').textContent = playerName;
+        document.getElementById('finalHeroScore').textContent = score;
+        const now = new Date();
+        document.getElementById('finalClearTime').textContent =
+          `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+        playTone('evolve');
+        speakFinalLine();
+      }
+    }
+
+    function speakFinalLine() {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance('산휘쌤에게 확인을 받고 자유시간을 즐기거라!');
+      utter.lang = 'ko-KR';
+      utter.rate = 0.98;
+      utter.pitch = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function restartVoiceQuiz() {
+      playTone('click');
+      voiceIdx = 0;
+      for (let i = 0; i < VOICE_QUESTIONS.length; i++) {
+        document.getElementById('vdot' + i).classList.remove('cleared', 'active');
+      }
+      document.getElementById('voiceActiveArea').style.display = 'block';
+      document.getElementById('voiceVictoryArea').style.display = 'none';
+      renderVoiceQuestion();
+    }
+
+    function showVoiceHint() {
+      playTone('click');
+      document.getElementById('vqHintBox').textContent = VOICE_QUESTIONS[voiceIdx].hint;
+    }
+
+    function speakCurrentQuestion() {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(VOICE_QUESTIONS[voiceIdx].q);
+      utter.lang = 'ko-KR';
+      utter.rate = 1.02;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function submitVoiceFallback() {
+      const inp = document.getElementById('voiceFallbackInput');
+      const val = inp.value.trim();
+      if (!val) return;
+      document.getElementById('voiceTranscriptBox').textContent = `⌨️ 비상 주문 입력: "${val}"`;
+      checkVoiceAnswer([val], true);
+    }
+
+    // Modal Controls
+    function openAnswerModal() {
+      playTone('click');
+      document.getElementById('answerModal').classList.add('open');
+    }
+
+    function closeAnswerModal() {
+      document.getElementById('answerModal').classList.remove('open');
+    }
+  </script>
+</body>
+</html>
